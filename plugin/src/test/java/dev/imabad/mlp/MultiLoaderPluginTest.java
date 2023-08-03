@@ -3,21 +3,58 @@
  */
 package dev.imabad.mlp;
 
+import dev.imabad.mlp.test.ReappearTest;
+import net.fabricmc.mappingio.adapter.MappingDstNsReorder;
+import net.fabricmc.mappingio.adapter.MappingSourceNsSwitch;
+import net.fabricmc.mappingio.format.ProGuardReader;
+import net.fabricmc.mappingio.format.TsrgReader;
+import net.fabricmc.mappingio.tree.MemoryMappingTree;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.gradle.api.Project;
 import org.junit.Test;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+
 import static org.junit.Assert.*;
 
 /**
  * A simple unit test for the 'dev.imabad.mlp.greeting' plugin.
  */
 public class MultiLoaderPluginTest {
-//    @Test public void pluginRegistersATask() {
-//        // Create a test project and apply the plugin
-//        Project project = ProjectBuilder.builder().build();
+
+    private static final String TEST_AW = """
+            accessWidener v1 named
+            accessible field net/minecraft/world/entity/vehicle/Boat waterLevel D
+            """;
+
+    private static final String TEST_AT = """
+            public net.minecraft.world.entity.vehicle.Boat f_38277_
+            """;
+    @Test
+    public void pluginRegistersATask() throws IOException {
+        // Create a test project and apply the plugin
+        Project project = ProjectBuilder.builder().build();
 //        project.getPlugins().apply("dev.imabad.mlp.greeting");
-//
-//        // Verify the result
+
+        MemoryMappingTree tree = new MemoryMappingTree();
+
+        try (BufferedReader reader = Files.newBufferedReader(Path.of("meta.txt"))) {
+            ProGuardReader.read(reader, "named", "obf", new MappingSourceNsSwitch(tree, "named"));
+        }
+
+
+        try (BufferedReader reader = Files.newBufferedReader(Path.of("joined.tsrg"))) {
+            TsrgReader.read(reader, tree);
+        }
+
+        byte[] remap = ReappearTest.remap(tree, "named", "srg", TEST_AW.getBytes());
+
+        assertSame(TEST_AT, new String(remap));
+        // Verify the result
 //        assertNotNull(project.getTasks().findByName("greeting"));
-//    }
+    }
 }

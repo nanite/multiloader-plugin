@@ -12,6 +12,8 @@ plugins {
     `maven-publish`
 }
 
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
 version = "1.0.0-SNAPSHOT"
 
 repositories {
@@ -24,6 +26,10 @@ repositories {
 }
 
 dependencies {
+    implementation ("net.fabricmc:tiny-remapper:0.8.7")
+    implementation ("net.fabricmc:access-widener:2.1.0")
+    implementation ("net.fabricmc:mapping-io:0.2.1")
+
     implementation("net.fabricmc:fabric-loom:1.3-SNAPSHOT")
     implementation("net.minecraftforge.gradle:ForgeGradle:6.0.+")
     // Use JUnit test framework for unit tests

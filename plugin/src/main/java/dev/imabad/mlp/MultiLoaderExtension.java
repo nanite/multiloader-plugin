@@ -47,7 +47,7 @@ public abstract class MultiLoaderExtension {
         MultiLoaderRoot multiLoaderRoot = getRootExtension(project).getRootOptions().get();
         DependencyHandler deps = this.project.getDependencies();
         deps.add("minecraft",
-                        "com.mojang:minecraft:" + multiLoaderRoot.minecraftVersion.get());
+                "com.mojang:minecraft:" + multiLoaderRoot.minecraftVersion.get());
         LoomGradleExtensionAPI loom = this.project.getExtensions()
                 .getByType(LoomGradleExtensionAPI.class);
         deps.add("mappings", loom
