@@ -38,11 +38,11 @@ public class ForgeLoader {
                 forgePath + ":forge:" + multiLoaderRoot.minecraftVersion.get() + "-" +
                         multiLoaderForge.forgeVersion.get());
         Project commonProject = MultiLoaderExtension.getCommonProject(project, multiLoaderRoot);
-        deps.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
+        deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME,
                 commonProject);
         SourceSetContainer commonSourceSets = commonProject.getExtensions().getByType(SourceSetContainer.class);
         SourceSet clientSourceSet = commonSourceSets.getByName("client");
-        deps.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, clientSourceSet.getOutput());
+        deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, clientSourceSet.getOutput());
     }
 
     public static void setupForgeGradle(Project project, MultiLoaderForge multiLoaderForge){
@@ -80,7 +80,8 @@ public class ForgeLoader {
         if(isSplitSources){
             SourceSet client = commonSourceSets.getByName("client");
             modRun.source(client);
-            project.getTasks().maybeCreate("clientClasses").dependsOn(":common:clientClasses");
+            project.getTasks().maybeCreate("clientClasses")
+                    .dependsOn(commonProject.getTasks().getByName("clientClasses"));
         }
         return runConfig;
     }
