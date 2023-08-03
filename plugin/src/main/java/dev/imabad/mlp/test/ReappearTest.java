@@ -15,6 +15,8 @@ import org.objectweb.asm.commons.Remapper;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
 
 public class ReappearTest {
 
@@ -27,7 +29,7 @@ public class ReappearTest {
 //            MemoryMappingTree newTree = new MemoryMappingTree(mappingTree);
 //            SrgReader.read(Files.newBufferedReader(Path.of("joined.tsrg")), newTree);
 
-            return remap(mappingTree, MappingsNamespace.NAMED.toString(), MappingsNamespace.NAMED.toString(), input);
+            return remap(Collections.emptyList(), mappingTree, MappingsNamespace.NAMED.toString(), MappingsNamespace.NAMED.toString(), input);
 
         }
 //        catch (IOException e) {
@@ -35,16 +37,19 @@ public class ReappearTest {
 //        }
     }
 
-    public static byte[] remap(MemoryMappingTree mappingTree, String fromM, String toM, byte[] input) {
+    public static byte[] remap(List<Path> minecraftJars, MemoryMappingTree mappingTree, String fromM, String toM, byte[] input) {
         TinyRemapper tinyRemapper = TinyRemapper.newRemapper()
                 .withMappings(TinyRemapperHelper.create(mappingTree, fromM, toM, true))
                 .ignoreFieldDesc(true)
                 .build();
 
+        for (Path minecraftJar : minecraftJars) {
+            tinyRemapper.readClassPathAsync(minecraftJar);
+        }
         final Remapper sigAsmRemapper = tinyRemapper.getEnvironment().getRemapper();
 
         ATWriter writer = new ATWriter();
-        AccessWidenerRemapper awRemapper = new AccessWidenerRemapper(writer, sigAsmRemapper, fromM, toM);
+        CustomAccessWidenerRemapper awRemapper = new CustomAccessWidenerRemapper(writer, sigAsmRemapper, fromM, toM);
         AccessWidenerReader reader = new AccessWidenerReader(awRemapper);
         reader.read(input);
         tinyRemapper.finish();

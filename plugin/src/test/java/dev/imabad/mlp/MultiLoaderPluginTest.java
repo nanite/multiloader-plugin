@@ -4,6 +4,9 @@
 package dev.imabad.mlp;
 
 import dev.imabad.mlp.test.ReappearTest;
+import net.fabricmc.loom.LoomGradleExtension;
+import net.fabricmc.loom.api.mappings.layered.MappingsNamespace;
+import net.fabricmc.loom.util.download.Download;
 import net.fabricmc.mappingio.adapter.MappingDstNsReorder;
 import net.fabricmc.mappingio.adapter.MappingSourceNsSwitch;
 import net.fabricmc.mappingio.format.ProGuardReader;
@@ -14,6 +17,7 @@ import org.gradle.api.Project;
 import org.junit.Test;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,20 +42,22 @@ public class MultiLoaderPluginTest {
     public void pluginRegistersATask() throws IOException {
         // Create a test project and apply the plugin
         Project project = ProjectBuilder.builder().build();
-//        project.getPlugins().apply("dev.imabad.mlp.greeting");
-
+        project.getPlugins().apply("dev.imabad.mlp");
         MemoryMappingTree tree = new MemoryMappingTree();
+        Path tempDir = Files.createTempDirectory("mlp-mappings-test");
 
         try (BufferedReader reader = Files.newBufferedReader(Path.of("meta.txt"))) {
-            ProGuardReader.read(reader, "named", "obf", new MappingSourceNsSwitch(tree, "named"));
+            ProGuardReader.read(reader, "named", "obf", tree);
         }
-
 
         try (BufferedReader reader = Files.newBufferedReader(Path.of("joined.tsrg"))) {
             TsrgReader.read(reader, tree);
         }
 
-        byte[] remap = ReappearTest.remap(tree, "named", "srg", TEST_AW.getBytes());
+        Download.create("").downloadPath(new File(tempDir.toFile(), "test.jar").toPath());
+
+        final LoomGradleExtension extension = LoomGradleExtension.get(project);
+        byte[] remap = ReappearTest.remap(extension.getMinecraftJars(MappingsNamespace.NAMED), tree, "named", "srg", TEST_AW.getBytes());
 
         assertSame(TEST_AT, new String(remap));
         // Verify the result
