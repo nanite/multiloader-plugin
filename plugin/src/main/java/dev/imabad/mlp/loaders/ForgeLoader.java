@@ -11,6 +11,7 @@ import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.JavaPlugin;
+import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.jvm.tasks.Jar;
 
@@ -36,9 +37,12 @@ public class ForgeLoader {
         deps.add("minecraft",
                 forgePath + ":forge:" + multiLoaderRoot.minecraftVersion.get() + "-" +
                         multiLoaderForge.forgeVersion.get());
-
+        Project commonProject = MultiLoaderExtension.getCommonProject(project, multiLoaderRoot);
         deps.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
-                project.getRootProject().project(multiLoaderRoot.commonProjectName.get()));
+                commonProject);
+        SourceSetContainer commonSourceSets = commonProject.getExtensions().getByType(SourceSetContainer.class);
+        SourceSet clientSourceSet = commonSourceSets.getByName("client");
+        deps.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, clientSourceSet.getOutput());
     }
 
     public static void setupForgeGradle(Project project, MultiLoaderForge multiLoaderForge){
@@ -48,21 +52,19 @@ public class ForgeLoader {
         NamedDomainObjectContainer<RunConfig> runs = forgeUserDev.getRuns();
         Project commonProject = MultiLoaderExtension.getCommonProject(project, multiLoaderRoot);
         SourceSetContainer commonSourceSets = commonProject.getExtensions().getByType(SourceSetContainer.class);
-        createOrConfigureRunConfig(project, runs, commonSourceSets, "Client");
-        createOrConfigureRunConfig(project, runs, commonSourceSets, "Server");
+        createOrConfigureRunConfig(project, runs, commonSourceSets, commonProject, "Client", multiLoaderRoot.splitSources.get());
+        createOrConfigureRunConfig(project, runs, commonSourceSets, commonProject, "Server", multiLoaderRoot.splitSources.get());
         if(multiLoaderForge.useDataGen.get()){
-            RunConfig dataConfig = createOrConfigureRunConfig(project, runs, commonSourceSets, "Data");
+            RunConfig dataConfig = createOrConfigureRunConfig(project, runs, commonSourceSets,
+                    commonProject, "Data", multiLoaderRoot.splitSources.get());
             dataConfig.args("--mod", multiLoaderRoot.modID.get(), "--all", "--output",
                     project.file("src/generated/resources"), "--existing", project.file("src/main/resources"));
         }
     }
 
     private static RunConfig createOrConfigureRunConfig(Project project, NamedDomainObjectContainer<RunConfig> runs,
-                                                   SourceSetContainer commonSourceSets, String name){
-        RunConfig runConfig = runs.findByName(name.toLowerCase());
-        if(runConfig == null){
-            runConfig = runs.create(name.toLowerCase());
-        }
+                                                   SourceSetContainer commonSourceSets, Project commonProject, String name, boolean isSplitSources){
+        RunConfig runConfig = runs.maybeCreate(name.toLowerCase());
         runConfig.workingDirectory(project.file("run"));
         runConfig.ideaModule(project.getRootProject().getName() + "." + project.getName() + ".main");
         runConfig.taskName(name);
@@ -73,8 +75,13 @@ public class ForgeLoader {
         if(modRun == null){
             modRun = mods.create("mod" + name + "Run");
         }
-        modRun.source(commonSourceSets.getByName("main"));
-        modRun.source(project.getExtensions().getByType(SourceSetContainer.class).getByName("main"));
+        SourceSet forgeMain = project.getExtensions().getByType(SourceSetContainer.class).getByName("main");
+        modRun.sources(commonSourceSets.getByName("main"), forgeMain);
+        if(isSplitSources){
+            SourceSet client = commonSourceSets.getByName("client");
+            modRun.source(client);
+            project.getTasks().maybeCreate("clientClasses").dependsOn(":common:clientClasses");
+        }
         return runConfig;
     }
 

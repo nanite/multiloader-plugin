@@ -11,6 +11,8 @@ import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.provider.Property;
 
+import java.util.HashMap;
+
 public abstract class MultiLoaderExtension {
 
     public static MultiLoaderExtension getExtension(Project project){
@@ -46,10 +48,14 @@ public abstract class MultiLoaderExtension {
         DependencyHandler deps = this.project.getDependencies();
         deps.add("minecraft",
                         "com.mojang:minecraft:" + multiLoaderRoot.minecraftVersion.get());
-        deps.add("mappings", this.project.getExtensions()
-                .getByType(LoomGradleExtensionAPI.class)
+        LoomGradleExtensionAPI loom = this.project.getExtensions()
+                .getByType(LoomGradleExtensionAPI.class);
+        deps.add("mappings", loom
                 .officialMojangMappings());
         deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, multiLoaderRoot.mixinString.get());
+        if(multiLoaderRoot.splitSources.get()) {
+            loom.splitEnvironmentSourceSets();
+        }
         multiLoaderRoot.commonProjectName.set(this.project.getName());
     }
 

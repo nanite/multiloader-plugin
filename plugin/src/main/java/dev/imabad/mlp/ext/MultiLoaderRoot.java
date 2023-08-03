@@ -13,6 +13,7 @@ public abstract class MultiLoaderRoot  {
     public Property<String> commonProjectName;
     public Property<String> modID;
     public Property<String> accessWidenerFile;
+    public Property<Boolean> splitSources;
     @Inject
     public MultiLoaderRoot(Project project) {
         minecraftVersion = project.getObjects().property(String.class);
@@ -21,6 +22,7 @@ public abstract class MultiLoaderRoot  {
         commonProjectName = project.getObjects().property(String.class).convention("common");
         modID = project.getObjects().property(String.class);
         accessWidenerFile = project.getObjects().property(String.class).convention("src/main/resources/%s.accesswidener");
+        splitSources = project.getObjects().property(Boolean.class).convention(false);
     }
 
 }
