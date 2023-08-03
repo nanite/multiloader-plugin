@@ -20,23 +20,6 @@ import java.util.List;
 
 public class ReappearTest {
 
-    public static byte[] remapAccessWidener(Project project, byte[] input) {
-
-        LoomGradleExtension extension = LoomGradleExtension.get(project);
-        try(ScopedSharedServiceManager serviceManager = new ScopedSharedServiceManager()) {
-            MemoryMappingTree mappingTree = extension.getMappingConfiguration().getMappingsService(serviceManager).getMappingTree();
-
-//            MemoryMappingTree newTree = new MemoryMappingTree(mappingTree);
-//            SrgReader.read(Files.newBufferedReader(Path.of("joined.tsrg")), newTree);
-
-            return remap(Collections.emptyList(), mappingTree, MappingsNamespace.NAMED.toString(), MappingsNamespace.NAMED.toString(), input);
-
-        }
-//        catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-    }
-
     public static byte[] remap(List<Path> minecraftJars, MemoryMappingTree mappingTree, String fromM, String toM, byte[] input) {
         TinyRemapper tinyRemapper = TinyRemapper.newRemapper()
                 .withMappings(TinyRemapperHelper.create(mappingTree, fromM, toM, true))

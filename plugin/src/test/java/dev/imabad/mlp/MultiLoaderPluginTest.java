@@ -53,13 +53,9 @@ public class MultiLoaderPluginTest {
         try (BufferedReader reader = Files.newBufferedReader(Path.of("joined.tsrg"))) {
             TsrgReader.read(reader, tree);
         }
+        byte[] remap = ReappearTest.remap(Arrays.asList(Path.of("C:\\Users\\stuar\\.gradle\\caches\\fabric-loom\\minecraftMaven\\net\\minecraft\\minecraft-common\\1.20.1-loom.mappings.1_20_1.layered+hash.2198-v2\\minecraft-common-1.20.1-loom.mappings.1_20_1.layered+hash.2198-v2.jar")), tree, "named", "srg", TEST_AW.getBytes());
 
-        Download.create("").downloadPath(new File(tempDir.toFile(), "test.jar").toPath());
-
-        final LoomGradleExtension extension = LoomGradleExtension.get(project);
-        byte[] remap = ReappearTest.remap(extension.getMinecraftJars(MappingsNamespace.NAMED), tree, "named", "srg", TEST_AW.getBytes());
-
-        assertSame(TEST_AT, new String(remap));
+        assertEquals(TEST_AT, new String(remap));
         // Verify the result
 //        assertNotNull(project.getTasks().findByName("greeting"));
     }

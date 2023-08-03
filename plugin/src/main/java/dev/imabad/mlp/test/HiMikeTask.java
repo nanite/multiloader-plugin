@@ -10,7 +10,7 @@ public class HiMikeTask extends DefaultTask {
 
     @TaskAction
     public void run() throws IOException {
-        byte[] bytes = ReappearTest.remapAccessWidener(getProject(), Files.readAllBytes(getProject().file("test.aw").toPath()));
-        Files.write(getProject().file("test2.at").toPath(), bytes);
+//        byte[] bytes = ReappearTest.remapAccessWidener(getProject(), Files.readAllBytes(getProject().file("test.aw").toPath()));
+//        Files.write(getProject().file("test2.at").toPath(), bytes);
     }
 }
