@@ -26,6 +26,7 @@ repositories {
 }
 
 dependencies {
+    implementation ("com.google.code.gson:gson:2.10.1")
     implementation ("net.fabricmc:tiny-remapper:0.8.7")
     implementation ("net.fabricmc:access-widener:2.1.0")
     implementation ("net.fabricmc:mapping-io:0.2.1")

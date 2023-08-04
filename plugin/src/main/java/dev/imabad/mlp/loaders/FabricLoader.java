@@ -33,19 +33,13 @@ public class FabricLoader {
     public static void configureFabricDependencies(Project project, MultiLoaderFabric multiLoaderFabric){
         MultiLoaderRoot multiLoaderRoot = MultiLoaderExtension.getRootExtension(project).getRootOptions().get();
         DependencyHandler deps = project.getDependencies();
-        deps.add("minecraft",
-                "com.mojang:minecraft:" + multiLoaderRoot.minecraftVersion.get());
-        deps.add("mappings", project.getExtensions()
-                .getByType(LoomGradleExtensionAPI.class)
-                .officialMojangMappings());
-        deps.add("modImplementation",
-                "net.fabricmc:fabric-loader:" + multiLoaderFabric.fabricLoaderVersion.get());
+        LoomGradleExtensionAPI loomGradle = project.getExtensions().getByType(LoomGradleExtensionAPI.class);
+        deps.add("minecraft", "com.mojang:minecraft:" + multiLoaderRoot.minecraftVersion.get());
+        deps.add("mappings", loomGradle.officialMojangMappings());
+        deps.add("modImplementation", "net.fabricmc:fabric-loader:" + multiLoaderFabric.fabricLoaderVersion.get());
         Project commonProject = MultiLoaderExtension.getCommonProject(project, multiLoaderRoot);
-        deps.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME,
-                commonProject);
-        if(multiLoaderRoot.splitSources.get()){
-            LoomGradleExtensionAPI loomGradle = project.getExtensions()
-                    .getByType(LoomGradleExtensionAPI.class);
+        deps.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, commonProject);
+        if(multiLoaderRoot.splitSources.get()) {
             loomGradle.splitEnvironmentSourceSets();
             SourceSetContainer commonSourceSets = commonProject.getExtensions().getByType(SourceSetContainer.class);
             SourceSet clientSourceSet = commonSourceSets.getByName("client");
@@ -55,17 +49,14 @@ public class FabricLoader {
 
     public static void setupLoom(Project project){
         MultiLoaderRoot multiLoaderRoot = MultiLoaderExtension.getRootExtension(project).getRootOptions().get();
-        LoomGradleExtensionAPI loomGradle = project.getExtensions()
-                .getByType(LoomGradleExtensionAPI.class);
-        RunConfigSettings clientRunConfig = loomGradle.getRuns()
-                .maybeCreate("client");
+        LoomGradleExtensionAPI loomGradle = project.getExtensions().getByType(LoomGradleExtensionAPI.class);
+        RunConfigSettings clientRunConfig = loomGradle.getRuns().maybeCreate("client");
         clientRunConfig.client();
         clientRunConfig.setConfigName("Fabric Client");
         clientRunConfig.ideConfigGenerated(true);
         clientRunConfig.runDir("run");
 
-        RunConfigSettings serverRunConfig = loomGradle.getRuns()
-                .maybeCreate("server");
+        RunConfigSettings serverRunConfig = loomGradle.getRuns().maybeCreate("server");
         serverRunConfig.server();
         serverRunConfig.setConfigName("Fabric Server");
         serverRunConfig.ideConfigGenerated(true);
@@ -73,10 +64,7 @@ public class FabricLoader {
 
         Project commonProject = project.getRootProject().project(multiLoaderRoot.commonProjectName.get());
         if (multiLoaderRoot.accessWidenerFile.isPresent()) {
-            File aw = multiLoaderRoot.accessWidenerFile.get();
-            if(aw.exists()){
-                loomGradle.getAccessWidenerPath().set(aw);
-            }
+            loomGradle.getAccessWidenerPath().set(multiLoaderRoot.accessWidenerFile.get());
         }
         String defaultRefMapName = String.format("%s.refmap.json", multiLoaderRoot.modID.get());;
         loomGradle.getMixin().getDefaultRefmapName().set(defaultRefMapName);

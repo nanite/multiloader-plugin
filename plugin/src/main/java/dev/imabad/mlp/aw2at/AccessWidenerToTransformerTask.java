@@ -2,38 +2,43 @@ package dev.imabad.mlp.aw2at;
 
 import dev.imabad.mlp.MultiLoaderExtension;
 import dev.imabad.mlp.ext.MultiLoaderRoot;
+import dev.imabad.mlp.lib.DownloaderUtils;
+import dev.imabad.mlp.lib.minecraft.PistonMeta;
+import dev.imabad.mlp.lib.minecraft.VersionMeta;
 import dev.imabad.mlp.test.AccessRemappper;
 import net.fabricmc.loom.LoomGradleExtension;
 import net.fabricmc.loom.api.mappings.layered.MappingsNamespace;
+import net.fabricmc.loom.util.ZipUtils;
+import net.fabricmc.loom.util.download.Download;
 import net.fabricmc.mappingio.format.ProGuardReader;
 import net.fabricmc.mappingio.format.TsrgReader;
 import net.fabricmc.mappingio.tree.MemoryMappingTree;
-import net.minecraftforge.gradle.common.tasks.DownloadMavenArtifact;
 import net.minecraftforge.gradle.common.util.Utils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
-import org.gradle.api.Task;
-import org.gradle.api.file.RegularFile;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.internal.impldep.com.google.gson.Gson;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 //This should only run from the root project
 public class AccessWidenerToTransformerTask extends DefaultTask {
 
     public static final String ACCESS_TRANSFORMER_PATH = "src/main/resources/META-INF/accesstransformer.cfg";
+
+    private static final String MCP_CONFIG = "https://maven.neoforged.net/releases/de/oceanlabs/mcp/mcp_config/%s/mcp_config-%s.zip";
+    private static final String PISTON_META = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
+
     @TaskAction
-    public void run() throws IOException {
+    public void run() throws IOException, URISyntaxException {
         runTransformer(getProject());
     }
 
-    public static void runTransformer(Project rootProject) throws IOException {
+    public static void runTransformer(Project rootProject) throws IOException, URISyntaxException {
         rootProject.getLogger().info("Converting access widener to access transformer");
         Project forgeProject = rootProject.project(":forge");
         Project commonProject = rootProject.project(":common");
@@ -42,10 +47,11 @@ public class AccessWidenerToTransformerTask extends DefaultTask {
 
         LoomGradleExtension extension = LoomGradleExtension.get(commonProject);
         MemoryMappingTree tree = new MemoryMappingTree();
-        InputStream mojangMappings = new ByteArrayInputStream(getMojangMappings(forgeProject, root.minecraftVersion.get()));
+        Path cacheDir = DownloaderUtils.getCacheDir(rootProject);
+        InputStream mojangMappings = new ByteArrayInputStream(getMojangMappings(cacheDir, root.minecraftVersion.get()));
         ProGuardReader.read(new InputStreamReader(mojangMappings), "named", "obf", tree);
 
-        InputStream inputStream = new ByteArrayInputStream(getSrg(forgeProject));
+        InputStream inputStream = new ByteArrayInputStream(getSrgMappings(cacheDir, root.minecraftVersion.get()));
 
 
         TsrgReader.read(new InputStreamReader(inputStream), tree);
@@ -55,30 +61,37 @@ public class AccessWidenerToTransformerTask extends DefaultTask {
         Files.write(forgeProject.file(ACCESS_TRANSFORMER_PATH).toPath(), remap, StandardOpenOption.CREATE);
     }
 
-    private static byte[] getMojangMappings(Project forgeProject, String minecraftVersion) throws IOException{
-        Path resolve = Utils.getCacheBase(forgeProject).resolve("minecraft_repo").resolve("versions").resolve(minecraftVersion).resolve("client_mappings.txt");
-        if(!Files.exists(resolve)){
-            throw new IOException("Could not find mappings file for " + minecraftVersion + " forge needs to download files first");
-        }else {
-            return Files.readAllBytes(resolve);
-        }
-    }
-
-
-    //This is a bit of a hack, but it works, could just directly reference the file?
-    private static byte[] getSrg(Project forgeProject) throws IOException {
-        Task mcpConfig = forgeProject.getTasks().getByName("downloadMcpConfig");
-        if (mcpConfig instanceof DownloadMavenArtifact data) {
-            RegularFile regularFile = data.getOutput().get();
-            try (ZipFile zipFile = new ZipFile(regularFile.getAsFile())) {
-                ZipEntry entry = zipFile.getEntry("config/joined.tsrg");
-                if (entry != null) {
-                    try (InputStream stream = zipFile.getInputStream(entry)) {
-                        return stream.readAllBytes();
-                    }
+    public static byte[] getMojangMappings(Path folder, String minecraftVersion) throws IOException, URISyntaxException {
+        Path mojangMappings = folder.resolve("mojang_mappings.txt");
+        error:
+        if(!Files.exists(mojangMappings)) {
+            String pistonMetaData = Download.create(PISTON_META).downloadString();
+            PistonMeta pistonMeta = Utils.GSON.fromJson(pistonMetaData, PistonMeta.class);
+            for (PistonMeta.Version version : pistonMeta.versions) {
+                if(version.id.equals(minecraftVersion)) {
+                    String versionMetaString = Download.create(version.url).downloadString();
+                    VersionMeta versionMeta = Utils.GSON.fromJson(versionMetaString, VersionMeta.class);
+                    VersionMeta.Downloads downloads = versionMeta.downloads;
+                    Download.create(downloads.client_mappings.url)
+                            .sha1(downloads.client_mappings.sha1)
+                            .defaultCache()
+                            .downloadPath(mojangMappings);
+                    break error;
                 }
             }
+            throw new RuntimeException("Could not find mojang mappings for " + minecraftVersion);
         }
-        throw new IOException("Could not find joined.tsrg in MCP Config");
+        return Files.readAllBytes(mojangMappings);
+
     }
+
+    public static byte[] getSrgMappings(Path folder, String minecraftVersion) throws IOException, URISyntaxException {
+        Path mcpConfigPath = folder.resolve("mcp_config.zip");
+        if(!Files.exists(mcpConfigPath)) {
+            Download.create(String.format(MCP_CONFIG, minecraftVersion, minecraftVersion))
+                    .downloadPath(mcpConfigPath);
+        }
+        return ZipUtils.unpack(mcpConfigPath, "config/joined.tsrg");
+    }
+
 }
