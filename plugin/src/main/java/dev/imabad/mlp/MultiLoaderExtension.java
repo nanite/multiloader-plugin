@@ -43,7 +43,8 @@ public abstract class MultiLoaderExtension {
         action.execute(rootOptions);
         getRootOptions().set(rootOptions);
         getRootOptions().finalizeValue();
-        TaskProvider<AccessWidenerToTransformerTask> aw2t = project.getTasks().register("aw2t", AccessWidenerToTransformerTask.class);
+        TaskProvider<AccessWidenerToTransformerTask> aw2t = project.getTasks().register("aw2at", AccessWidenerToTransformerTask.class);
+
     }
 
     public void common() {
@@ -74,6 +75,10 @@ public abstract class MultiLoaderExtension {
         MultiLoaderForge multiLoaderForge = project.getObjects().newInstance(MultiLoaderForge.class, project);
         action.execute(multiLoaderForge);
         ForgeLoader.setupForge(project, multiLoaderForge);
+        //Todo make this run more offten
+        project.getTasks().named("build").configure(task -> {
+            task.dependsOn(project.getRootProject().getTasks().named("aw2at"));
+        });
 
     }
 }

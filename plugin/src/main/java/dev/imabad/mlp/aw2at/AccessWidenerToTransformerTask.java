@@ -1,62 +1,64 @@
 package dev.imabad.mlp.aw2at;
 
+import dev.imabad.mlp.MultiLoaderExtension;
+import dev.imabad.mlp.ext.MultiLoaderRoot;
 import dev.imabad.mlp.test.AccessRemappper;
 import net.fabricmc.loom.LoomGradleExtension;
 import net.fabricmc.loom.api.mappings.layered.MappingsNamespace;
-import net.fabricmc.loom.util.service.ScopedSharedServiceManager;
 import net.fabricmc.mappingio.format.ProGuardReader;
 import net.fabricmc.mappingio.format.TsrgReader;
 import net.fabricmc.mappingio.tree.MemoryMappingTree;
 import net.minecraftforge.gradle.common.tasks.DownloadMavenArtifact;
-import net.minecraftforge.gradle.common.tasks.ExtractMCPData;
-import net.minecraftforge.gradle.userdev.UserDevExtension;
-import net.minecraftforge.gradle.userdev.UserDevPlugin;
+import net.minecraftforge.gradle.common.util.Utils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
-import org.gradle.api.file.Directory;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.tasks.TaskAction;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 //This should only run from the root project
 public class AccessWidenerToTransformerTask extends DefaultTask {
 
     @TaskAction
-    public void run() {
+    public void run() throws IOException {
         Project project = getProject();
         Project forgeProject = project.project(":forge");
         Project commonProject = project.project(":common");
 
+        MultiLoaderRoot root = MultiLoaderExtension.getRootExtension(project).getRootOptions().get();
 
         LoomGradleExtension extension = LoomGradleExtension.get(commonProject);
         MemoryMappingTree tree = new MemoryMappingTree();
-        try {
-            //Todo FIND THIS FILE???? or just download it
-            try (BufferedReader reader = Files.newBufferedReader(project.file("meta.txt").toPath())) {
-                ProGuardReader.read(reader, "named", "obf", tree);
-            }
+        InputStream mojangMappings = new ByteArrayInputStream(getMojangMappings(forgeProject, root.minecraftVersion.get()));
+        ProGuardReader.read(new InputStreamReader(mojangMappings), "named", "obf", tree);
 
-            InputStream inputStream = new ByteArrayInputStream(getSrg(forgeProject));
+        InputStream inputStream = new ByteArrayInputStream(getSrg(forgeProject));
 
 
-            TsrgReader.read(new InputStreamReader(inputStream), tree);
-            AccessRemappper remappper = new AccessRemappper(extension.getMinecraftJars(MappingsNamespace.NAMED), tree, "named", "srg");
-            File file = commonProject.file("src/main/resources/test.accesswidener");
-            byte[] remap = remappper.remap(Files.readAllBytes(file.toPath()));
-            Files.write(forgeProject.file("src/main/resources/META-INF/at.cfg").toPath(), remap, StandardOpenOption.CREATE);
-        }catch (IOException e){
-            //Todo better error handling
-            e.printStackTrace();
+        TsrgReader.read(new InputStreamReader(inputStream), tree);
+        AccessRemappper remappper = new AccessRemappper(extension.getMinecraftJars(MappingsNamespace.NAMED), tree, "named", "srg");
+        //Todo: make this configurable
+        File file = commonProject.file("src/main/resources/test.accesswidener");
+        byte[] remap = remappper.remap(Files.readAllBytes(file.toPath()));
+        //Todo make this configurable
+        Files.write(forgeProject.file("src/main/resources/META-INF/at.cfg").toPath(), remap, StandardOpenOption.CREATE);
+    }
+
+    private byte[] getMojangMappings(Project forgeProject, String minecraftVersion) throws IOException{
+        Path resolve = Utils.getCacheBase(forgeProject).resolve("minecraft_repo").resolve("versions").resolve(minecraftVersion).resolve("client_mappings.txt");
+        if(!Files.exists(resolve)){
+            throw new IOException("Could not find mappings file for " + minecraftVersion + " forge needs to download files first");
+        }else {
+            return Files.readAllBytes(resolve);
         }
-
     }
 
 
