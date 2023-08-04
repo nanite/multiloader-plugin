@@ -5,26 +5,14 @@ import net.fabricmc.accesswidener.AccessWidenerRemapper;
 import net.fabricmc.accesswidener.AccessWidenerVisitor;
 import org.objectweb.asm.commons.Remapper;
 
+//Copy of AccessWidenerRemapper but removed class name remapping
 public class CustomAccessWidenerRemapper implements AccessWidenerVisitor {
     private final AccessWidenerVisitor delegate;
-    private final String fromNamespace;
-    private final String toNamespace;
     private final Remapper remapper;
 
-    public CustomAccessWidenerRemapper(AccessWidenerVisitor delegate, Remapper remapper, String fromNamespace, String toNamespace) {
+    public CustomAccessWidenerRemapper(AccessWidenerVisitor delegate, Remapper remapper) {
         this.delegate = delegate;
-        this.fromNamespace = fromNamespace;
-        this.toNamespace = toNamespace;
         this.remapper = remapper;
-    }
-    @Override
-    public void visitHeader(String namespace) {
-        if (!this.fromNamespace.equals(namespace)) {
-            throw new IllegalArgumentException("Cannot remap access widener from namespace '" + namespace + "'."
-                    + " Expected: '" + this.fromNamespace + "'");
-        }
-
-        delegate.visitHeader(toNamespace);
     }
 
     @Override

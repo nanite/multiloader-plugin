@@ -1,15 +1,19 @@
 package dev.imabad.mlp;
 
+import dev.imabad.mlp.aw2at.AccessWidenerToTransformerTask;
 import dev.imabad.mlp.ext.*;
 import dev.imabad.mlp.loaders.FabricLoader;
 import dev.imabad.mlp.loaders.ForgeLoader;
 import net.fabricmc.loom.api.LoomGradleExtensionAPI;
 import net.minecraftforge.gradle.userdev.UserDevExtension;
+import net.minecraftforge.gradle.userdev.UserDevPlugin;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.TaskProvider;
 
 import java.util.HashMap;
 
@@ -27,7 +31,7 @@ public abstract class MultiLoaderExtension {
         return project.getRootProject().project(extension.commonProjectName.get());
     }
 
-    private Project project;
+    private final Project project;
     public abstract Property<MultiLoaderRoot> getRootOptions();
 
     public MultiLoaderExtension(Project project) {
@@ -39,6 +43,7 @@ public abstract class MultiLoaderExtension {
         action.execute(rootOptions);
         getRootOptions().set(rootOptions);
         getRootOptions().finalizeValue();
+        TaskProvider<AccessWidenerToTransformerTask> aw2t = project.getTasks().register("aw2t", AccessWidenerToTransformerTask.class);
     }
 
     public void common() {
@@ -69,5 +74,6 @@ public abstract class MultiLoaderExtension {
         MultiLoaderForge multiLoaderForge = project.getObjects().newInstance(MultiLoaderForge.class, project);
         action.execute(multiLoaderForge);
         ForgeLoader.setupForge(project, multiLoaderForge);
+
     }
 }

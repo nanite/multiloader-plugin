@@ -14,7 +14,7 @@ public class ATWriter implements AccessWidenerVisitor {
             case ACCESSIBLE -> "public";
             case MUTABLE -> throw new IllegalArgumentException("Class cannot be mutable");
         };
-        builder.append(type).append(' ').append(name).append('\n');
+        builder.append(type).append(' ').append(name.replace("/", ".")).append('\n');
     }
 
     @Override
@@ -25,7 +25,7 @@ public class ATWriter implements AccessWidenerVisitor {
             case ACCESSIBLE -> "public";
             case MUTABLE -> throw new IllegalArgumentException("Methods cannot be mutable");
         };
-        builder.append(type).append(" ").append(owner).append("(").append(descriptor).append(")").append(name); //Todo do I need;
+        builder.append(type).append(" ").append(owner.replace("/", ".")).append(" ").append(name).append(descriptor).append("\n"); //Todo do I need;
     }
 
     @Override
@@ -36,7 +36,7 @@ public class ATWriter implements AccessWidenerVisitor {
             case ACCESSIBLE -> "public";
             case MUTABLE -> "public-f";
         };
-        builder.append(type).append(" ").append(owner.replace("/", ".")).append(" ").append(name).append('\n');
+        builder.append(type).append(" ").append(owner.replace("/", ".")).append(" ").append(name).append("\n");
     }
 
     public byte[] write() {
