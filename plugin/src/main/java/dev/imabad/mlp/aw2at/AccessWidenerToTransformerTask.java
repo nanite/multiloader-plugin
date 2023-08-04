@@ -27,13 +27,18 @@ import java.util.zip.ZipFile;
 //This should only run from the root project
 public class AccessWidenerToTransformerTask extends DefaultTask {
 
+    public static final String ACCESS_TRANSFORMER_PATH = "src/main/resources/META-INF/accesstransformer.cfg";
     @TaskAction
     public void run() throws IOException {
-        Project project = getProject();
-        Project forgeProject = project.project(":forge");
-        Project commonProject = project.project(":common");
+        runTransformer(getProject());
+    }
 
-        MultiLoaderRoot root = MultiLoaderExtension.getRootExtension(project).getRootOptions().get();
+    public static void runTransformer(Project rootProject) throws IOException {
+        rootProject.getLogger().info("Converting access widener to access transformer");
+        Project forgeProject = rootProject.project(":forge");
+        Project commonProject = rootProject.project(":common");
+
+        MultiLoaderRoot root = MultiLoaderExtension.getRootExtension(rootProject).getRootOptions().get();
 
         LoomGradleExtension extension = LoomGradleExtension.get(commonProject);
         MemoryMappingTree tree = new MemoryMappingTree();
@@ -45,14 +50,12 @@ public class AccessWidenerToTransformerTask extends DefaultTask {
 
         TsrgReader.read(new InputStreamReader(inputStream), tree);
         AccessRemappper remappper = new AccessRemappper(extension.getMinecraftJars(MappingsNamespace.NAMED), tree, "named", "srg");
-        //Todo: make this configurable
-        File file = commonProject.file("src/main/resources/test.accesswidener");
+        File file = root.accessWidenerFile.get();
         byte[] remap = remappper.remap(Files.readAllBytes(file.toPath()));
-        //Todo make this configurable
-        Files.write(forgeProject.file("src/main/resources/META-INF/at.cfg").toPath(), remap, StandardOpenOption.CREATE);
+        Files.write(forgeProject.file(ACCESS_TRANSFORMER_PATH).toPath(), remap, StandardOpenOption.CREATE);
     }
 
-    private byte[] getMojangMappings(Project forgeProject, String minecraftVersion) throws IOException{
+    private static byte[] getMojangMappings(Project forgeProject, String minecraftVersion) throws IOException{
         Path resolve = Utils.getCacheBase(forgeProject).resolve("minecraft_repo").resolve("versions").resolve(minecraftVersion).resolve("client_mappings.txt");
         if(!Files.exists(resolve)){
             throw new IOException("Could not find mappings file for " + minecraftVersion + " forge needs to download files first");
@@ -63,7 +66,7 @@ public class AccessWidenerToTransformerTask extends DefaultTask {
 
 
     //This is a bit of a hack, but it works, could just directly reference the file?
-    private byte[] getSrg(Project forgeProject) throws IOException {
+    private static byte[] getSrg(Project forgeProject) throws IOException {
         Task mcpConfig = forgeProject.getTasks().getByName("downloadMcpConfig");
         if (mcpConfig instanceof DownloadMavenArtifact data) {
             RegularFile regularFile = data.getOutput().get();

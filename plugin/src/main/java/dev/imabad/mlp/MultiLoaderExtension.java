@@ -7,6 +7,7 @@ import dev.imabad.mlp.loaders.ForgeLoader;
 import net.fabricmc.loom.api.LoomGradleExtensionAPI;
 import net.minecraftforge.gradle.userdev.UserDevExtension;
 import net.minecraftforge.gradle.userdev.UserDevPlugin;
+import net.minecraftforge.gradle.userdev.tasks.AccessTransformJar;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -15,6 +16,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.TaskProvider;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 public abstract class MultiLoaderExtension {
@@ -43,8 +45,7 @@ public abstract class MultiLoaderExtension {
         action.execute(rootOptions);
         getRootOptions().set(rootOptions);
         getRootOptions().finalizeValue();
-        TaskProvider<AccessWidenerToTransformerTask> aw2t = project.getTasks().register("aw2at", AccessWidenerToTransformerTask.class);
-
+        project.getTasks().register("aw2at", AccessWidenerToTransformerTask.class);
     }
 
     public void common() {
@@ -73,12 +74,19 @@ public abstract class MultiLoaderExtension {
 
     public void forge(Action<MultiLoaderForge> action) {
         MultiLoaderForge multiLoaderForge = project.getObjects().newInstance(MultiLoaderForge.class, project);
+        MultiLoaderRoot rootExtension = getRootExtension(project).getRootOptions().get();
         action.execute(multiLoaderForge);
         ForgeLoader.setupForge(project, multiLoaderForge);
-        //Todo make this run more offten
-        project.getTasks().named("build").configure(task -> {
-            task.dependsOn(project.getRootProject().getTasks().named("aw2at"));
-        });
+        //Todo make this run more often
+        if(rootExtension.isForgeATEnabled()) {
+            project.afterEvaluate(forgeProject -> {
+                try {
+                    AccessWidenerToTransformerTask.runTransformer(forgeProject.getRootProject());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
 
     }
 }

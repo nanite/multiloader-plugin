@@ -14,6 +14,8 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 
+import java.io.File;
+
 public class FabricLoader {
 
     public static void setupFabric(Project project, MultiLoaderFabric multiLoaderFabric){
@@ -70,9 +72,11 @@ public class FabricLoader {
         serverRunConfig.runDir("run");
 
         Project commonProject = project.getRootProject().project(multiLoaderRoot.commonProjectName.get());
-        String accessWidenerLoc = String.format(multiLoaderRoot.accessWidenerFile.get(), multiLoaderRoot.modID.get());
-        if(commonProject.file(accessWidenerLoc).exists()){
-            loomGradle.getAccessWidenerPath().set(commonProject.file(accessWidenerLoc));
+        if (multiLoaderRoot.accessWidenerFile.isPresent()) {
+            File aw = multiLoaderRoot.accessWidenerFile.get();
+            if(aw.exists()){
+                loomGradle.getAccessWidenerPath().set(aw);
+            }
         }
         String defaultRefMapName = String.format("%s.refmap.json", multiLoaderRoot.modID.get());;
         loomGradle.getMixin().getDefaultRefmapName().set(defaultRefMapName);
