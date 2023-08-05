@@ -65,7 +65,7 @@ public class ForgeLoader {
             RunConfig dataConfig = createOrConfigureRunConfig(project, runs, commonSourceSets,
                     commonProject, "Data", multiLoaderRoot.splitSources.get());
             dataConfig.args("--mod", multiLoaderRoot.modID.get(), "--all", "--output",
-                    multiLoaderRoot.getDataGenOptions().get().useFabric.get(), "--existing",
+                    multiLoaderRoot.getDataGenOptions().get().useForge.get(), "--existing",
                     commonProject.file("src/main/resources"), "--existing",
                     project.file("src/main/resources"));
         }
