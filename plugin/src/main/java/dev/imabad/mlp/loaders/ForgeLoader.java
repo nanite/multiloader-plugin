@@ -1,9 +1,11 @@
 package dev.imabad.mlp.loaders;
 
 import dev.imabad.mlp.MultiLoaderExtension;
+import dev.imabad.mlp.aw2at.AccessWidenerToTransformerTask;
 import dev.imabad.mlp.ext.MultiLoaderForge;
 import dev.imabad.mlp.ext.MultiLoaderRoot;
 import net.minecraftforge.gradle.common.util.ModConfig;
+import net.minecraftforge.gradle.common.util.MojangLicenseHelper;
 import net.minecraftforge.gradle.common.util.RunConfig;
 import net.minecraftforge.gradle.patcher.tasks.ReobfuscateJar;
 import net.minecraftforge.gradle.userdev.UserDevExtension;
@@ -63,6 +65,11 @@ public class ForgeLoader {
             dataConfig.args("--mod", multiLoaderRoot.modID.get(), "--all", "--output",
                     commonProject.file("src/generated/resources"), "--existing", commonProject.file("src/main/resources"));
         }
+        if(multiLoaderRoot.isForgeATEnabled()) {
+            forgeUserDev.accessTransformer(project.file(AccessWidenerToTransformerTask.ACCESS_TRANSFORMER_PATH));
+        }
+
+
     }
 
     private static RunConfig createOrConfigureRunConfig(Project project, NamedDomainObjectContainer<RunConfig> runs,

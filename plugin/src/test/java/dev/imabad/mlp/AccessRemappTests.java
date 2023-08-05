@@ -3,6 +3,7 @@
  */
 package dev.imabad.mlp;
 
+import dev.imabad.mlp.aw2at.AccessWidenerToTransformerTask;
 import dev.imabad.mlp.test.AccessRemappper;
 import net.fabricmc.accesswidener.AccessWidenerFormatException;
 import net.fabricmc.mappingio.format.ProGuardReader;
@@ -11,8 +12,8 @@ import net.fabricmc.mappingio.tree.MemoryMappingTree;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -23,15 +24,21 @@ public class AccessRemappTests {
 
     private static AccessRemappper remappper;
     @BeforeClass
-    public static void loadRemapper() throws IOException {
-        MemoryMappingTree tree = new MemoryMappingTree();
-        try (BufferedReader reader = Files.newBufferedReader(Path.of("test_data","meta.txt"))) {
-            ProGuardReader.read(reader, "named", "obf", tree);
+    public static void loadRemapper() throws IOException, URISyntaxException {
+
+        Path cacheDir = Path.of("temp");
+
+        if (!Files.exists(cacheDir)) {
+            Files.createDirectory(cacheDir);
         }
 
-        try (BufferedReader reader = Files.newBufferedReader(Path.of("test_data","joined.tsrg"))) {
-            TsrgReader.read(reader, tree);
-        }
+        byte[] mojangMappings = AccessWidenerToTransformerTask.getMojangMappings(cacheDir, "1.20.1");
+        byte[] srgMappings = AccessWidenerToTransformerTask.getSrgMappings(cacheDir, "1.20.1");
+
+        MemoryMappingTree tree = new MemoryMappingTree();
+        ProGuardReader.read(new InputStreamReader(new ByteArrayInputStream(mojangMappings)), "named", "obf", tree);
+        TsrgReader.read(new InputStreamReader(new ByteArrayInputStream(srgMappings)), tree);
+
         remappper = new AccessRemappper(List.of(Path.of("test_data", "minecraft-mapped.jar")), tree, "named", "srg");
     }
     @Test
