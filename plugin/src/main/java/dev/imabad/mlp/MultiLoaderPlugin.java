@@ -2,6 +2,10 @@ package dev.imabad.mlp;
 
 import org.gradle.api.Project;
 import org.gradle.api.Plugin;
+import org.gradle.api.flow.FlowProviders;
+import org.gradle.api.flow.FlowScope;
+
+import javax.inject.Inject;
 
 public class MultiLoaderPlugin implements Plugin<Project> {
     public void apply(Project project) {

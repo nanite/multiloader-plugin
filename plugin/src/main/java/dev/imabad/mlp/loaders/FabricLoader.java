@@ -8,6 +8,7 @@ import net.fabricmc.loom.api.LoomGradleExtensionAPI;
 import net.fabricmc.loom.api.ModSettings;
 import net.fabricmc.loom.api.mappings.layered.MappingsNamespace;
 import net.fabricmc.loom.configuration.ide.RunConfigSettings;
+import net.minecraftforge.gradle.common.util.RunConfig;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.JavaPlugin;
@@ -53,6 +54,7 @@ public class FabricLoader {
 
     public static void setupLoom(Project project){
         MultiLoaderRoot multiLoaderRoot = MultiLoaderExtension.getRootExtension(project).getRootOptions().get();
+        Project commonProject = project.getRootProject().project(multiLoaderRoot.commonProjectName.get());
         LoomGradleExtensionAPI loomGradle = project.getExtensions()
                 .getByType(LoomGradleExtensionAPI.class);
         RunConfigSettings clientRunConfig = loomGradle.getRuns()
@@ -69,7 +71,18 @@ public class FabricLoader {
         serverRunConfig.ideConfigGenerated(true);
         serverRunConfig.runDir("run");
 
-        Project commonProject = project.getRootProject().project(multiLoaderRoot.commonProjectName.get());
+        if(multiLoaderRoot.getDataGenOptions().isPresent() &&
+                (multiLoaderRoot.getDataGenOptions().get().useFabric.get() || multiLoaderRoot.getDataGenOptions().get().mixBoth.get())){
+            RunConfigSettings dataGenRunConfig = loomGradle.getRuns()
+                    .maybeCreate("datagenClient");
+            dataGenRunConfig.inherit(clientRunConfig);
+            dataGenRunConfig.setConfigName("Fabric Data Generation");
+            dataGenRunConfig.vmArg("-Dfabric-api.datagen");
+            dataGenRunConfig.vmArg("-Dfabric-api.datagen.output-dir=" + commonProject.file("src/main/generated"));
+            dataGenRunConfig.vmArg("-Dfabric-api.datagen.modid=" + multiLoaderRoot.modID.get());
+            dataGenRunConfig.runDir("build/datagen");
+        }
+
         String accessWidenerLoc = String.format(multiLoaderRoot.accessWidenerFile.get(), multiLoaderRoot.modID.get());
         if(commonProject.file(accessWidenerLoc).exists()){
             loomGradle.getAccessWidenerPath().set(commonProject.file(accessWidenerLoc));
@@ -86,5 +99,4 @@ public class FabricLoader {
             modSettings.sourceSet(commonSourceSets.getByName("client"));
         }
     }
-
 }

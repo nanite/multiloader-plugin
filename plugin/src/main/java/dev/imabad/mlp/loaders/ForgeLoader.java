@@ -54,11 +54,14 @@ public class ForgeLoader {
         SourceSetContainer commonSourceSets = commonProject.getExtensions().getByType(SourceSetContainer.class);
         createOrConfigureRunConfig(project, runs, commonSourceSets, commonProject, "Client", multiLoaderRoot.splitSources.get());
         createOrConfigureRunConfig(project, runs, commonSourceSets, commonProject, "Server", multiLoaderRoot.splitSources.get());
-        if(multiLoaderForge.useDataGen.get()){
+        System.out.println("Checking if datagen is enabled..");
+        if(multiLoaderRoot.getDataGenOptions().isPresent() &&
+                (multiLoaderRoot.getDataGenOptions().get().useForge.get() || multiLoaderRoot.getDataGenOptions().get().mixBoth.get())){
+            System.out.println("Data generation is enabled for forge, creating run config...");
             RunConfig dataConfig = createOrConfigureRunConfig(project, runs, commonSourceSets,
                     commonProject, "Data", multiLoaderRoot.splitSources.get());
             dataConfig.args("--mod", multiLoaderRoot.modID.get(), "--all", "--output",
-                    project.file("src/generated/resources"), "--existing", project.file("src/main/resources"));
+                    commonProject.file("src/generated/resources"), "--existing", commonProject.file("src/main/resources"));
         }
     }
 

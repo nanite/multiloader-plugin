@@ -4,18 +4,22 @@ import dev.imabad.mlp.aw2at.AccessWidenerToTransformerTask;
 import dev.imabad.mlp.ext.*;
 import dev.imabad.mlp.loaders.FabricLoader;
 import dev.imabad.mlp.loaders.ForgeLoader;
+import dev.imabad.mlp.tasks.SingleOutputJar;
 import net.fabricmc.loom.api.LoomGradleExtensionAPI;
 import net.minecraftforge.gradle.userdev.UserDevExtension;
 import net.minecraftforge.gradle.userdev.UserDevPlugin;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.*;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.flow.FlowProviders;
+import org.gradle.api.flow.FlowScope;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.TaskProvider;
 
-import java.util.HashMap;
+import javax.inject.Inject;
 
 public abstract class MultiLoaderExtension {
 
@@ -33,6 +37,11 @@ public abstract class MultiLoaderExtension {
 
     private final Project project;
     public abstract Property<MultiLoaderRoot> getRootOptions();
+    @Inject
+    protected abstract FlowScope getFlowScope();
+    @Inject
+    protected abstract FlowProviders getFlowProviders();
+
 
     public MultiLoaderExtension(Project project) {
         this.project = project;
@@ -45,6 +54,22 @@ public abstract class MultiLoaderExtension {
         getRootOptions().finalizeValue();
         TaskProvider<AccessWidenerToTransformerTask> aw2t = project.getTasks().register("aw2at", AccessWidenerToTransformerTask.class);
 
+        if(rootOptions.singleOutputJar.get()) {
+            project.project("forge").afterEvaluate((a) -> {
+                SingleOutputJar singleOutputjar = project.getTasks().create("singleOutputJar", SingleOutputJar.class);
+                singleOutputjar.dependsOn(project.project("fabric").getTasks().getByName("remapJar"));
+                singleOutputjar.dependsOn(project.project("forge").getTasks().getByName("jar"));
+                singleOutputjar.setGroup("mlp");
+            });
+        }
+        if(rootOptions.getDataGenOptions().isPresent()){
+            DataGenOptions dataGenOptions = rootOptions.getDataGenOptions().get();
+            if(dataGenOptions.useForge.get() && dataGenOptions.useFabric.get() ||
+                    dataGenOptions.useFabric.get() && dataGenOptions.mixBoth.get() ||
+                    dataGenOptions.useForge.get() && dataGenOptions.mixBoth.get()){
+                throw new GradleException("Data Gen options are mutually exclusive!");
+            }
+        }
     }
 
     public void common() {
