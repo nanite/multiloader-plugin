@@ -24,7 +24,7 @@ public abstract class MultiLoaderRoot  {
     public ListProperty<String> filesToExpand;
     public abstract Property<DataGenOptions> getDataGenOptions();
 
-    private Project project;
+    private final Project project;
     public Property<Boolean> convertAccessWidener;
     @Inject
     public MultiLoaderRoot(Project project) {
@@ -37,17 +37,16 @@ public abstract class MultiLoaderRoot  {
         accessWidenerFile = project.getObjects().property(File.class);
         splitSources = project.getObjects().property(Boolean.class).convention(true);
         convertAccessWidener = project.getObjects().property(Boolean.class).convention(true);
-    }
-
-    //Todo better name?
-    public boolean isForgeATEnabled() {
-        return accessWidenerFile.isPresent() && convertAccessWidener.get();
         singleOutputJar = project.getObjects().property(Boolean.class).convention(false);
         filesToExpand = project.getObjects().listProperty(String.class)
                 .convention(Arrays.asList("pack.mcmeta", "fabric.mod.json",
                         "META-INF/mods.toml", "mods.toml", "*.mixins.json"));
     }
 
+    //Todo better name?
+    public boolean isForgeATEnabled() {
+        return accessWidenerFile.isPresent() && convertAccessWidener.get();
+    }
     public void dataGen(Action<DataGenOptions> action) {
         DataGenOptions dataGenOptions = project.getObjects().newInstance(DataGenOptions.class, project);
         action.execute(dataGenOptions);

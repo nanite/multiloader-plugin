@@ -86,8 +86,10 @@ public abstract class MultiLoaderExtension {
         deps.add("minecraft", "com.mojang:minecraft:" + multiLoaderRoot.minecraftVersion.get());
         deps.add("mappings", loom.officialMojangMappings());
         deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, multiLoaderRoot.mixinString.get());
-        if(multiLoaderRoot.splitSources.get()) {
+        if (multiLoaderRoot.accessWidenerFile.isPresent()) {
             loom.getAccessWidenerPath().set(multiLoaderRoot.accessWidenerFile.get());
+        }
+        if(multiLoaderRoot.splitSources.get()) {
             loom.splitEnvironmentSourceSets();
             ModSettings modSettings = loom.getMods().maybeCreate(multiLoaderRoot.modID.get());
             SourceSetContainer sourceSets = project.getExtensions().getByType(SourceSetContainer.class);
