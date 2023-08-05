@@ -65,13 +65,13 @@ public class FabricLoader {
         serverRunConfig.runDir("run");
 
         if(multiLoaderRoot.getDataGenOptions().isPresent() &&
-                (multiLoaderRoot.getDataGenOptions().get().useFabric.get() || multiLoaderRoot.getDataGenOptions().get().mixBoth.get())){
+                (multiLoaderRoot.getDataGenOptions().get().useFabric.isPresent() || multiLoaderRoot.getDataGenOptions().get().mixBoth.get())){
             RunConfigSettings dataGenRunConfig = loomGradle.getRuns()
                     .maybeCreate("datagenClient");
             dataGenRunConfig.inherit(clientRunConfig);
             dataGenRunConfig.setConfigName("Fabric Data Generation");
             dataGenRunConfig.vmArg("-Dfabric-api.datagen");
-            dataGenRunConfig.vmArg("-Dfabric-api.datagen.output-dir=" + commonProject.file("src/main/generated"));
+            dataGenRunConfig.vmArg("-Dfabric-api.datagen.output-dir=" + multiLoaderRoot.getDataGenOptions().get().useFabric.get());
             dataGenRunConfig.vmArg("-Dfabric-api.datagen.modid=" + multiLoaderRoot.modID.get());
             dataGenRunConfig.runDir("build/datagen");
         }

@@ -42,6 +42,8 @@ public class ForgeLoader {
         Project commonProject = MultiLoaderExtension.getCommonProject(project, multiLoaderRoot);
         deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME,
                 commonProject);
+        deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME,
+                multiLoaderRoot.mixinString.get() + ":processor");
         SourceSetContainer commonSourceSets = commonProject.getExtensions().getByType(SourceSetContainer.class);
         SourceSet clientSourceSet = commonSourceSets.getByName("client");
         deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, clientSourceSet.getOutput());
@@ -58,12 +60,14 @@ public class ForgeLoader {
         createOrConfigureRunConfig(project, runs, commonSourceSets, commonProject, "Server", multiLoaderRoot.splitSources.get());
         System.out.println("Checking if datagen is enabled..");
         if(multiLoaderRoot.getDataGenOptions().isPresent() &&
-                (multiLoaderRoot.getDataGenOptions().get().useForge.get() || multiLoaderRoot.getDataGenOptions().get().mixBoth.get())){
+                (multiLoaderRoot.getDataGenOptions().get().useForge.isPresent() || multiLoaderRoot.getDataGenOptions().get().mixBoth.get())){
             System.out.println("Data generation is enabled for forge, creating run config...");
             RunConfig dataConfig = createOrConfigureRunConfig(project, runs, commonSourceSets,
                     commonProject, "Data", multiLoaderRoot.splitSources.get());
             dataConfig.args("--mod", multiLoaderRoot.modID.get(), "--all", "--output",
-                    commonProject.file("src/generated/resources"), "--existing", commonProject.file("src/main/resources"));
+                    multiLoaderRoot.getDataGenOptions().get().useFabric.get(), "--existing",
+                    commonProject.file("src/main/resources"), "--existing",
+                    project.file("src/main/resources"));
         }
         if(multiLoaderRoot.isForgeATEnabled()) {
             forgeUserDev.accessTransformer(project.file(AccessWidenerToTransformerTask.ACCESS_TRANSFORMER_PATH));

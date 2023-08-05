@@ -69,10 +69,10 @@ public abstract class MultiLoaderExtension {
         }
         if(rootOptions.getDataGenOptions().isPresent()){
             DataGenOptions dataGenOptions = rootOptions.getDataGenOptions().get();
-            if(dataGenOptions.useForge.get() && dataGenOptions.useFabric.get() ||
-                    dataGenOptions.useFabric.get() && dataGenOptions.mixBoth.get() ||
-                    dataGenOptions.useForge.get() && dataGenOptions.mixBoth.get()){
-                throw new GradleException("Data Gen options are mutually exclusive!");
+            if(dataGenOptions.mixBoth.get() && (dataGenOptions.useFabric.isPresent()
+                    || dataGenOptions.useForge.isPresent())){
+                throw new GradleException("Data Gen options are mutually exclusive! You can either have mixBoth or have" +
+                        " useFabric and useForge");
             }
         }
     }
