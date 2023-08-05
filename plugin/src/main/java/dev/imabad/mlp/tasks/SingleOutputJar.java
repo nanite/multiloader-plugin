@@ -2,6 +2,8 @@ package dev.imabad.mlp.tasks;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import dev.imabad.mlp.MultiLoaderExtension;
+import dev.imabad.mlp.ext.MultiLoaderRoot;
 import dev.imabad.mlp.jarjar.FabricMod;
 import dev.imabad.mlp.jarjar.Metadata;
 import org.gradle.api.DefaultTask;
@@ -65,6 +67,7 @@ public abstract class SingleOutputJar extends DefaultTask {
 
     @TaskAction
     public void run(){
+        MultiLoaderRoot multiLoaderRoot = MultiLoaderExtension.getRootExtension(getProject()).getRootOptions().get();
         Path outputPath = getOutput().getAsFile().get().toPath();
         try {
             Files.createDirectories(outputPath.getParent());
@@ -87,7 +90,7 @@ public abstract class SingleOutputJar extends DefaultTask {
             putJarIntoJar(jarout, fabricJarFile, "META-INF/jars/");
 
             jarout.putNextEntry(new ZipEntry("fabric.mod.json"));
-            jarout.write(GSON.toJson(new FabricMod(1, getArchiveIdentifier().get() + "_ml",
+            jarout.write(GSON.toJson(new FabricMod(1, multiLoaderRoot.modID.get() + "_ml",
                     getArchiveVersion().get(), getArchiveIdentifier().get(),
                     Collections.singletonList(
                             new FabricMod.Jar("META-INF/jars/" + fabricJarFile.toPath().getFileName().toString())
