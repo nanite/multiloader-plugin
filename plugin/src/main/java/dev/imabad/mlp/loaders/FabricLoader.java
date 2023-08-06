@@ -72,7 +72,7 @@ public class FabricLoader {
             dataGenRunConfig.inherit(clientRunConfig);
             dataGenRunConfig.setConfigName("Fabric Data Generation");
             dataGenRunConfig.vmArg("-Dfabric-api.datagen");
-            dataGenRunConfig.vmArg("-Dfabric-api.datagen.output-dir=" + multiLoaderRoot.getDataGenOptions().get().useFabric.get());
+            dataGenRunConfig.vmArg("-Dfabric-api.datagen.output-dir=" + multiLoaderRoot.getDataGenOptions().get().useFabric.orElse(commonProject.file("src/generated/resources")));
             dataGenRunConfig.vmArg("-Dfabric-api.datagen.modid=" + multiLoaderRoot.modID.get());
             dataGenRunConfig.runDir("build/datagen");
         }

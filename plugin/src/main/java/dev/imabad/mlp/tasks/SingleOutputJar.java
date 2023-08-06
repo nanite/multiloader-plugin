@@ -52,18 +52,18 @@ public abstract class SingleOutputJar extends DefaultTask {
     }
 
     @InputFile
-    abstract RegularFileProperty getForgeJar();
+    public abstract RegularFileProperty getForgeJar();
     @InputFile
-    abstract RegularFileProperty getFabricJar();
+    public abstract RegularFileProperty getFabricJar();
     @Input
-    abstract Property<String> getArchiveGroup();
+    public abstract Property<String> getArchiveGroup();
     @Input
-    abstract Property<String> getArchiveIdentifier();
+    public abstract Property<String> getArchiveIdentifier();
     @Input
-    abstract Property<String> getArchiveVersion();
+    public abstract Property<String> getArchiveVersion();
 
     @OutputFile
-    abstract RegularFileProperty getOutput();
+    public abstract RegularFileProperty getOutput();
 
     @TaskAction
     public void run(){
