@@ -20,28 +20,28 @@ public class GenericLoader {
         MultiLoaderRoot multiLoaderRoot = MultiLoaderExtension.getRootExtension(project).getRootOptions().get();
         Project commonProject = MultiLoaderExtension.getCommonProject(project, multiLoaderRoot);
         SourceSetContainer commonSourceSets = commonProject.getExtensions().getByType(SourceSetContainer.class);
+        SourceSetContainer projectSourceSets = project.getExtensions().getByType(SourceSetContainer.class);
         SourceSet mainSourceSet = commonSourceSets.getByName("main");
         if(!multiLoaderRoot.splitSources.get()){
-            tasks.withType(JavaCompile.class).forEach((task) -> task.source(mainSourceSet.getAllSource()));
-            tasks.withType(ProcessResources.class).forEach((task) -> task.from(mainSourceSet.getResources()));
+            tasks.withType(JavaCompile.class).matching(t -> !t.getName().contains("test")).forEach((task) -> task.source(mainSourceSet.getAllSource()));
+            tasks.withType(ProcessResources.class).matching(t -> !t.getName().contains("test")).forEach((task) -> task.from(mainSourceSet.getResources()));
         } else {
-            SourceSetContainer projectSourceSets = project.getExtensions().getByType(SourceSetContainer.class);
             try  {
                 projectSourceSets.getByName("client");
                 tasks.withType(JavaCompile.class).forEach((task) -> {
-                    if(!task.getName().toLowerCase().contains("client")){
+                    if(!task.getName().toLowerCase().contains("client") && !task.getName().toLowerCase().contains("test")){
                         task.source(mainSourceSet.getAllSource());
                     }
                 });
                 tasks.withType(ProcessResources.class).forEach((task) -> {
-                    if(!task.getName().toLowerCase().contains("client")){
+                    if(!task.getName().toLowerCase().contains("client") && !task.getName().toLowerCase().contains("test")){
                         task.from(mainSourceSet.getResources());
                     }
                 });
             } catch (Exception e){
                 //No Client sourceset, so this is safe!
-                tasks.withType(JavaCompile.class).forEach((task) -> task.source(mainSourceSet.getAllSource()));
-                tasks.withType(ProcessResources.class).forEach((task) -> task.from(mainSourceSet.getResources()));
+                tasks.withType(JavaCompile.class).matching(t -> !t.getName().contains("test")).forEach((task) -> task.source(mainSourceSet.getAllSource()));
+                tasks.withType(ProcessResources.class).matching(t -> !t.getName().contains("test")).forEach((task) -> task.from(mainSourceSet.getResources()));
             }
         }
         tasks.withType(ProcessResources.class).forEach((task) -> {
@@ -51,10 +51,10 @@ public class GenericLoader {
             });
         });
         tasks.withType(Javadoc.class).forEach((task) -> task.source(mainSourceSet.getAllJava()));
-        commonSourceSets.forEach(sourceSet -> {
+        commonSourceSets.matching(t -> !t.getName().contains("test")).forEach(sourceSet -> {
             sourceSet.getAllSource().getSourceDirectories().filter((file) -> !file.exists()).forEach(File::mkdirs);
         });
-        project.getExtensions().getByType(SourceSetContainer.class).forEach(sourceSet -> {
+        project.getExtensions().getByType(SourceSetContainer.class).matching(t -> !t.getName().contains("test")).forEach(sourceSet -> {
             sourceSet.getAllSource().getSourceDirectories().filter((file) -> !file.exists()).forEach(File::mkdirs);
         });
     }
