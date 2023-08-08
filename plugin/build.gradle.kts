@@ -85,7 +85,7 @@ publishing {
     repositories {
         if (ENV.NANITE_TOKEN) {
             maven {
-                url "https://maven.nanite.dev/snapshots"
+                url = uri("https://maven.nanite.dev/snapshots")
                 credentials {
                     username = "nanite"
                     password = "${ENV.NANITE_TOKEN}"
