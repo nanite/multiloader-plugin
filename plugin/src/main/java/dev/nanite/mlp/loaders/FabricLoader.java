@@ -77,7 +77,7 @@ public class FabricLoader {
         if (multiLoaderRoot.accessWidenerFile.isPresent()) {
             loomGradle.getAccessWidenerPath().set(multiLoaderRoot.accessWidenerFile.get());
         }
-        String defaultRefMapName = String.format("%s.refmap.json", multiLoaderRoot.modID.get());;
+        String defaultRefMapName = String.format("%s.refmap.json", multiLoaderRoot.modID.get());
         loomGradle.getMixin().getDefaultRefmapName().set(defaultRefMapName);
         if(multiLoaderRoot.splitSources.get()){
             SourceSetContainer sourceSets = project.getExtensions().getByType(SourceSetContainer.class);

@@ -53,16 +53,19 @@ public abstract class MultiLoaderExtension {
     public void root(Action<MultiLoaderRoot> action) {
         MultiLoaderRoot rootOptions = project.getObjects().newInstance(MultiLoaderRoot.class, project);
         action.execute(rootOptions);
+        if(!rootOptions.commonMixin.isPresent()){
+            rootOptions.commonMixin.set(rootOptions.modID.get() + ".mixins.json");
+        }
         getRootOptions().set(rootOptions);
         getRootOptions().finalizeValue();
          project.getTasks().register("aw2at", AccessWidenerToTransformerTask.class);
 
         if(rootOptions.singleOutputJar.get()) {
+            SingleOutputJar singleOutputjar = project.getTasks().create("singleOutputJar", SingleOutputJar.class);
+            singleOutputjar.setGroup("mlp");
             project.project("forge").afterEvaluate((a) -> {
-                SingleOutputJar singleOutputjar = project.getTasks().create("singleOutputJar", SingleOutputJar.class);
                 singleOutputjar.dependsOn(project.project("fabric").getTasks().getByName("remapJar"));
                 singleOutputjar.dependsOn(project.project("forge").getTasks().getByName("jar"));
-                singleOutputjar.setGroup("mlp");
             });
         }
         if(rootOptions.getDataGenOptions().isPresent()){

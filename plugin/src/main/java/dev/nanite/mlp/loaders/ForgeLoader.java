@@ -13,6 +13,9 @@ import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
+import org.spongepowered.asm.gradle.plugins.MixinExtension;
+
+import java.util.Map;
 
 public class ForgeLoader {
 
@@ -27,11 +30,16 @@ public class ForgeLoader {
     public static void applyForgePlugins(Project project){
         project.getPlugins().apply("java");
         project.getPlugins().apply("net.minecraftforge.gradle");
+        project.getPlugins().apply("org.spongepowered.mixin");
     }
 
     public static void configureForgeDependencies(Project project, MultiLoaderForge multiLoaderForge){
         MultiLoaderRoot multiLoaderRoot = MultiLoaderExtension.getRootExtension(project).getRootOptions().get();
         var forgePath = multiLoaderForge.isNeo.get() ? "net.neoforged" : "net.minecraftforge";
+        if(multiLoaderRoot.overrideSpongeMixin.get()){
+            project.getConfigurations().getByName("annotationProcessor")
+                    .exclude(Map.of("group", "org.spongepowered", "module", "mixin"));
+        }
         DependencyHandler deps = project.getDependencies();
         deps.add("minecraft",
                 forgePath + ":forge:" + multiLoaderRoot.minecraftVersion.get() + "-" +
@@ -40,7 +48,7 @@ public class ForgeLoader {
         deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME,
                 commonProject);
         deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME,
-                multiLoaderRoot.mixinString.get() + ":processor");
+                multiLoaderRoot.mixinString.get());
         if(multiLoaderRoot.splitSources.get()) {
             SourceSetContainer commonSourceSets = commonProject.getExtensions().getByType(SourceSetContainer.class);
             SourceSet clientSourceSet = commonSourceSets.getByName("client");
@@ -55,11 +63,11 @@ public class ForgeLoader {
         NamedDomainObjectContainer<RunConfig> runs = forgeUserDev.getRuns();
         Project commonProject = MultiLoaderExtension.getCommonProject(project, multiLoaderRoot);
         SourceSetContainer commonSourceSets = commonProject.getExtensions().getByType(SourceSetContainer.class);
+        SourceSetContainer projectSourceSets = project.getExtensions().getByType(SourceSetContainer.class);
         createOrConfigureRunConfig(project, runs, commonSourceSets, commonProject, "Client", multiLoaderRoot.splitSources.get());
         createOrConfigureRunConfig(project, runs, commonSourceSets, commonProject, "Server", multiLoaderRoot.splitSources.get());
         if(multiLoaderRoot.getDataGenOptions().isPresent() &&
                 (multiLoaderRoot.getDataGenOptions().get().useForge.isPresent() || multiLoaderRoot.getDataGenOptions().get().mixBoth.get())){
-            System.out.println("Data generation is enabled for forge, creating run config...");
             RunConfig dataConfig = createOrConfigureRunConfig(project, runs, commonSourceSets,
                     commonProject, "Data", multiLoaderRoot.splitSources.get());
             dataConfig.args("--mod", multiLoaderRoot.modID.get(), "--all", "--output",
@@ -70,8 +78,14 @@ public class ForgeLoader {
         if(multiLoaderRoot.isForgeATEnabled()) {
             forgeUserDev.accessTransformer(project.file(AccessWidenerToTransformerTask.ACCESS_TRANSFORMER_PATH));
         }
-
-
+        MixinExtension mixinExtension = project.getExtensions().getByType(MixinExtension.class);
+        if(commonProject.file("src/main/resources/" + multiLoaderRoot.commonMixin.get()).exists()) {
+            mixinExtension.config(multiLoaderRoot.commonMixin.get());
+        }
+        if(project.file("src/main/resources/" + multiLoaderForge.forgeMixins.get()).exists()) {
+            mixinExtension.config(multiLoaderForge.forgeMixins.get());
+        }
+        mixinExtension.add(projectSourceSets.getByName("main"), multiLoaderRoot.modID.get() + ".refmap.json");
     }
 
     private static RunConfig createOrConfigureRunConfig(Project project, NamedDomainObjectContainer<RunConfig> runs,

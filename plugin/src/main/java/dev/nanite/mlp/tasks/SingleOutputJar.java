@@ -6,6 +6,8 @@ import dev.nanite.mlp.MultiLoaderExtension;
 import dev.nanite.mlp.ext.MultiLoaderRoot;
 import dev.nanite.mlp.jarjar.FabricMod;
 import dev.nanite.mlp.jarjar.Metadata;
+import net.fabricmc.loom.util.FileSystemUtil;
+import net.fabricmc.loom.util.ZipUtils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.Property;
@@ -19,10 +21,13 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.jar.Attributes;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 
 public abstract class SingleOutputJar extends DefaultTask {
@@ -40,10 +45,12 @@ public abstract class SingleOutputJar extends DefaultTask {
         this.getOutput().convention(getProject().getLayout()
                 .file(getProject().provider(() ->
                         new File(getProject().getBuildDir(), "libs/" + getArchiveIdentifier().get() + "-" + getArchiveVersion().get() + "-ml.jar"))));
-        Jar forgeJar = (Jar) getProject().project("forge").getTasks().getByName("jar");
-        getForgeJar().convention(forgeJar.getArchiveFile());
-        Jar fabricJar = (Jar) getProject().project("fabric").getTasks().getByName("remapJar");
-        getFabricJar().convention(fabricJar.getArchiveFile());
+        getProject().project("forge").afterEvaluate((a) -> {
+            Jar forgeJar = (Jar) getProject().project("forge").getTasks().getByName("jar");
+            getForgeJar().convention(forgeJar.getArchiveFile());
+            Jar fabricJar = (Jar) getProject().project("fabric").getTasks().getByName("remapJar");
+            getFabricJar().convention(fabricJar.getArchiveFile());
+        });
     }
 
     public Manifest getManifest() {
@@ -73,6 +80,8 @@ public abstract class SingleOutputJar extends DefaultTask {
             Files.deleteIfExists(outputPath);
         } catch (Exception e){}
         manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        manifest.getMainAttributes().put(new Attributes.Name("FMLModType"), "GAMELIBRARY");
+        manifest.getMainAttributes().put(Attributes.Name.IMPLEMENTATION_VERSION, getArchiveVersion().get());
         try(final JarOutputStream jarout = new JarOutputStream(Files.newOutputStream(outputPath), manifest)){
             File forgeJarFile = getForgeJar().getAsFile().get();
             putJarIntoJar(jarout, forgeJarFile, "META-INF/jarjar/");
@@ -108,5 +117,33 @@ public abstract class SingleOutputJar extends DefaultTask {
             inputStream.transferTo(jarOut);
         }
         jarOut.closeEntry();
+    }
+
+
+    public static void pack(Path from, JarOutputStream jarOut) throws IOException {
+
+        if (!Files.isDirectory(from)) throw new IllegalArgumentException(from + " is not a directory!");
+
+        int count = 0;
+
+        try (Stream<Path> walk = Files.walk(from)) {
+            Iterator<Path> iterator = walk.iterator();
+
+            while (iterator.hasNext()) {
+                Path fromPath = iterator.next();
+                if (!Files.isRegularFile(fromPath)) continue;
+                Path destPath = from.relativize(fromPath);
+                jarOut.putNextEntry(new ZipEntry(destPath.toString()));
+                try(final InputStream inputStream = Files.newInputStream(fromPath)){
+                    inputStream.transferTo(jarOut);
+                }
+                jarOut.closeEntry();
+                count++;
+            }
+        }
+
+        if (count == 0) {
+            throw new IOException("Noting packed into jar from %s".formatted(from));
+        }
     }
 }

@@ -20,16 +20,18 @@ public abstract class MultiLoaderRoot  {
     public Property<Boolean> splitSources;
     public Property<Boolean> singleOutputJar;
     public ListProperty<String> filesToExpand;
-    public abstract Property<DataGenOptions> getDataGenOptions();
-
-    private final Project project;
     public Property<Boolean> convertAccessWidener;
+    public Property<Boolean> overrideSpongeMixin;
+    public Property<String> commonMixin;
+
+    public abstract Property<DataGenOptions> getDataGenOptions();
+    private final Project project;
     @Inject
     public MultiLoaderRoot(Project project) {
         this.project = project;
         minecraftVersion = project.getObjects().property(String.class);
         parchmentVersion = project.getObjects().property(String.class);
-        mixinString = project.getObjects().property(String.class).convention("org.spongepowered:mixin:0.8.5");
+        mixinString = project.getObjects().property(String.class).convention("org.spongepowered:mixin:0.8.5:processor");
         commonProjectName = project.getObjects().property(String.class).convention("common");
         modID = project.getObjects().property(String.class);
         accessWidenerFile = project.getObjects().property(File.class);
@@ -39,6 +41,8 @@ public abstract class MultiLoaderRoot  {
         filesToExpand = project.getObjects().listProperty(String.class)
                 .convention(Arrays.asList("pack.mcmeta", "fabric.mod.json",
                         "META-INF/mods.toml", "mods.toml", "*.mixins.json"));
+        overrideSpongeMixin = project.getObjects().property(Boolean.class).convention(false);
+        commonMixin = project.getObjects().property(String.class);
     }
 
     //Todo better name?

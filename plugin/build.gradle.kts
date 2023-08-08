@@ -15,12 +15,13 @@ plugins {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
-version = "0.0.1"
+version = "0.0.2"
 group = "dev.nanite"
 
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
+    gradlePluginPortal()
     maven {
         name = "Creeperhost"
         url = uri("https://maven.creeperhost.net/")
@@ -35,6 +36,7 @@ dependencies {
 
     implementation("net.fabricmc:fabric-loom:1.3-SNAPSHOT")
     implementation("net.minecraftforge.gradle:ForgeGradle:6.0.+")
+    implementation("org.spongepowered:mixingradle:0.7.+")
     implementation("com.google.code.gson:gson:2.10.1")
     // Use JUnit test framework for unit tests
     testImplementation("junit:junit:4.13.1")
