@@ -81,14 +81,16 @@ publishing {
             version = "2.0.0"
             from(components["java"])
         }
-
-        // Also publish a snapshot so people can use the latest version if they wish
-//        mavenJava(MavenPublication) {
-//            groupId project . group
-//                    artifactId project . archivesBaseName
-//                    version project . version
-//                    artifact jar
-//        }
-
+    }
+    repositories {
+        if (ENV.NANITE_TOKEN) {
+            maven {
+                url "https://maven.nanite.dev/snapshots"
+                credentials {
+                    username = "nanite"
+                    password = "${ENV.NANITE_TOKEN}"
+                }
+            }
+        }
     }
 }
