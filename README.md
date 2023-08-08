@@ -8,7 +8,7 @@ Add this to your root project `build.gradle.kts`
 
 ```
 plugins {
-    id("dev.imabad.mlp") version("1.0.0-SNAPSHOT")
+    id("dev.nanite.mlp") version("1.0.0-SNAPSHOT")
     id("fabric-loom") version("1.3-SNAPSHOT") apply(false)
     id("net.minecraftforge.gradle") version("6.0.+") apply(false)
 }
@@ -32,7 +32,7 @@ Add this to your common `build.gradle.kts`
 
 ```
 plugins {
-    id("dev.imabad.mlp")
+    id("dev.nanite.mlp")
 }
 
 multiLoader.common()
@@ -42,7 +42,7 @@ Add this to your fabric `build.gradle.kts`
 
 ```
 plugins {
-    id("dev.imabad.mlp")
+    id("dev.nanite.mlp")
 }
 
 multiLoader.fabric() {
@@ -54,7 +54,7 @@ Add this to your forge `build.gradle.kts`
 
 ```
 plugins {
-    id("dev.imabad.mlp")
+    id("dev.nanite.mlp")
 }
 multiLoader.forge() {
     forgeVersion.set("47.1.43")

@@ -10,6 +10,7 @@ plugins {
     // Apply the Java Gradle plugin development plugin to add support for developing Gradle plugins
     `java-gradle-plugin`
     `maven-publish`
+    id("com.gradle.plugin-publish") version "1.2.0"
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -38,14 +39,6 @@ dependencies {
     testImplementation("junit:junit:4.13.1")
 }
 
-gradlePlugin {
-    // Define the plugin
-    val mlp by plugins.creating {
-        id = "dev.imabad.mlp"
-        implementationClass = "dev.imabad.mlp.MultiLoaderPlugin"
-    }
-}
-
 // Add a source set for the functional test suite
 val functionalTestSourceSet = sourceSets.create("functionalTest") {
 }
@@ -62,4 +55,40 @@ val functionalTest by tasks.registering(Test::class) {
 tasks.check {
     // Run the functional tests as part of `check`
     dependsOn(functionalTest)
+}
+
+
+gradlePlugin {
+    website = "https://github.com/nanite/multiloader-plugin/"
+    vcsUrl = "https://github.com/nanite/multiloader-plugin/"
+    testSourceSet(sourceSets["test"])
+
+    plugins.create("mlp") {
+        id = "dev.nanite.mlp"
+        implementationClass = "dev.nanite.mlp.MultiLoaderPlugin"
+        displayName = "Rushmead Also Fix Me"
+        description = "Rushmead Fix Me"
+        version = project.version
+        tags = listOf("minecraft", )
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("snapshot") {
+            groupId = "dev.nanite.mlp"
+            artifactId = "dev.nanite.mlp.gradle.plugin"
+            version = "2.0.0"
+            from(components["java"])
+        }
+
+        // Also publish a snapshot so people can use the latest version if they wish
+//        mavenJava(MavenPublication) {
+//            groupId project . group
+//                    artifactId project . archivesBaseName
+//                    version project . version
+//                    artifact jar
+//        }
+
+    }
 }
