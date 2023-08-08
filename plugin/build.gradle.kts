@@ -15,7 +15,7 @@ plugins {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
-version = "1.0.0-SNAPSHOT"
+version = "0.0.1"
 
 repositories {
     // Use Maven Central for resolving dependencies.
@@ -66,10 +66,10 @@ gradlePlugin {
     plugins.create("mlp") {
         id = "dev.nanite.mlp"
         implementationClass = "dev.nanite.mlp.MultiLoaderPlugin"
-        displayName = "Rushmead Also Fix Me"
-        description = "Rushmead Fix Me"
+        displayName = "MultiLoader Plugin"
+        description = "A gradle plugin designed for easing the creation of MultiLoader Minecraft mods. It currently supports Fabric & Forge."
         version = project.version
-        tags = listOf("minecraft", )
+        tags = listOf("minecraft")
     }
 }
 
