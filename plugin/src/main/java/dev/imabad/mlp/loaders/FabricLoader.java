@@ -38,7 +38,9 @@ public class FabricLoader {
         deps.add("minecraft", "com.mojang:minecraft:" + multiLoaderRoot.minecraftVersion.get());
         deps.add("mappings", loomGradle.officialMojangMappings());
         deps.add("modImplementation", "net.fabricmc:fabric-loader:" + multiLoaderFabric.fabricLoaderVersion.get());
-        deps.add("modImplementation", "net.fabricmc.fabric-api:fabric-api:" + multiLoaderFabric.fabricApiVersion.get());
+        if(multiLoaderFabric.fabricApiVersion.isPresent()) {
+            deps.add("modImplementation", "net.fabricmc.fabric-api:fabric-api:" + multiLoaderFabric.fabricApiVersion.get());
+        }
         Project commonProject = MultiLoaderExtension.getCommonProject(project, multiLoaderRoot);
         deps.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, commonProject);
         if(multiLoaderRoot.splitSources.get()) {

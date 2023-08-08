@@ -44,9 +44,11 @@ public class ForgeLoader {
                 commonProject);
         deps.add(JavaPlugin.ANNOTATION_PROCESSOR_CONFIGURATION_NAME,
                 multiLoaderRoot.mixinString.get() + ":processor");
-        SourceSetContainer commonSourceSets = commonProject.getExtensions().getByType(SourceSetContainer.class);
-        SourceSet clientSourceSet = commonSourceSets.getByName("client");
-        deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, clientSourceSet.getOutput());
+        if(multiLoaderRoot.splitSources.get()) {
+            SourceSetContainer commonSourceSets = commonProject.getExtensions().getByType(SourceSetContainer.class);
+            SourceSet clientSourceSet = commonSourceSets.getByName("client");
+            deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, clientSourceSet.getOutput());
+        }
     }
 
     public static void setupForgeGradle(Project project, MultiLoaderForge multiLoaderForge){
@@ -58,7 +60,6 @@ public class ForgeLoader {
         SourceSetContainer commonSourceSets = commonProject.getExtensions().getByType(SourceSetContainer.class);
         createOrConfigureRunConfig(project, runs, commonSourceSets, commonProject, "Client", multiLoaderRoot.splitSources.get());
         createOrConfigureRunConfig(project, runs, commonSourceSets, commonProject, "Server", multiLoaderRoot.splitSources.get());
-        System.out.println("Checking if datagen is enabled..");
         if(multiLoaderRoot.getDataGenOptions().isPresent() &&
                 (multiLoaderRoot.getDataGenOptions().get().useForge.isPresent() || multiLoaderRoot.getDataGenOptions().get().mixBoth.get())){
             System.out.println("Data generation is enabled for forge, creating run config...");
