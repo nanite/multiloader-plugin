@@ -16,6 +16,7 @@ plugins {
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 version = "0.0.1"
+group = "dev.nanite"
 
 repositories {
     // Use Maven Central for resolving dependencies.
