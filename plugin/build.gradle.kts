@@ -83,12 +83,12 @@ publishing {
         }
     }
     repositories {
-        if (ENV.NANITE_TOKEN) {
+        if (providers.environmentVariable("NANITE_TOKEN").isPresent()) {
             maven {
                 url = uri("https://maven.nanite.dev/snapshots")
                 credentials {
                     username = "nanite"
-                    password = "${ENV.NANITE_TOKEN}"
+                    password = providers.environmentVariable("NANITE_TOKEN").get()
                 }
             }
         }
