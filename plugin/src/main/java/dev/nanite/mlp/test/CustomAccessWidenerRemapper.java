@@ -25,7 +25,7 @@ public class CustomAccessWidenerRemapper implements AccessWidenerVisitor {
         delegate.visitMethod(
                 owner,
                 remapper.mapMethodName(owner, name, descriptor),
-                remapper.mapDesc(descriptor),
+                descriptor,
                 access,
                 transitive
         );
@@ -36,7 +36,7 @@ public class CustomAccessWidenerRemapper implements AccessWidenerVisitor {
         delegate.visitField(
                 owner,
                 remapper.mapFieldName(owner, name, descriptor),
-                remapper.mapDesc(descriptor),
+                descriptor,
                 access,
                 transitive
         );
