@@ -1,6 +1,7 @@
 package dev.nanite.mlp.loaders;
 
 import dev.nanite.mlp.MultiLoaderExtension;
+import dev.nanite.mlp.ext.DataGenOptions;
 import dev.nanite.mlp.ext.MultiLoaderFabric;
 import dev.nanite.mlp.ext.MultiLoaderRoot;
 import net.fabricmc.loom.api.LoomGradleExtensionAPI;
@@ -11,6 +12,8 @@ import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
+
+import java.io.File;
 
 public class FabricLoader {
 
@@ -69,7 +72,9 @@ public class FabricLoader {
             dataGenRunConfig.inherit(clientRunConfig);
             dataGenRunConfig.setConfigName("Fabric Data Generation");
             dataGenRunConfig.vmArg("-Dfabric-api.datagen");
-            dataGenRunConfig.vmArg("-Dfabric-api.datagen.output-dir=" + multiLoaderRoot.getDataGenOptions().get().useFabric.orElse(commonProject.file("src/generated/resources")));
+            DataGenOptions dataGenOptions = multiLoaderRoot.getDataGenOptions().get();
+            File commonProjectPath = commonProject.file("src/generated/resources");
+            dataGenRunConfig.vmArg("-Dfabric-api.datagen.output-dir=" + dataGenOptions.useFabric.getOrElse(commonProjectPath).getAbsolutePath());
             dataGenRunConfig.vmArg("-Dfabric-api.datagen.modid=" + multiLoaderRoot.modID.get());
             dataGenRunConfig.runDir("build/datagen");
         }
