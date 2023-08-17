@@ -45,12 +45,19 @@ public abstract class SingleOutputJar extends DefaultTask {
         this.getOutput().convention(getProject().getLayout()
                 .file(getProject().provider(() ->
                         new File(getProject().getBuildDir(), "libs/" + getArchiveIdentifier().get() + "-" + getArchiveVersion().get() + "-ml.jar"))));
-        getProject().project("forge").afterEvaluate((a) -> {
+        if(getProject().project("forge").getTasks().findByPath("jar") != null){
             Jar forgeJar = (Jar) getProject().project("forge").getTasks().getByName("jar");
             getForgeJar().convention(forgeJar.getArchiveFile());
             Jar fabricJar = (Jar) getProject().project("fabric").getTasks().getByName("remapJar");
             getFabricJar().convention(fabricJar.getArchiveFile());
-        });
+        } else {
+            getProject().project("forge").afterEvaluate((a) -> {
+                Jar forgeJar = (Jar) getProject().project("forge").getTasks().getByName("jar");
+                getForgeJar().convention(forgeJar.getArchiveFile());
+                Jar fabricJar = (Jar) getProject().project("fabric").getTasks().getByName("remapJar");
+                getFabricJar().convention(fabricJar.getArchiveFile());
+            });
+        }
     }
 
     public Manifest getManifest() {
