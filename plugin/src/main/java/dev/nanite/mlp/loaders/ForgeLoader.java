@@ -35,6 +35,9 @@ public class ForgeLoader {
 
     public static void configureForgeDependencies(Project project, MultiLoaderForge multiLoaderForge){
         MultiLoaderRoot multiLoaderRoot = MultiLoaderExtension.getRootExtension(project).getRootOptions().get();
+        if(multiLoaderForge.isNeo.get() && !multiLoaderRoot.minecraftVersion.get().equals("1.20.1")) {
+            throw new IllegalStateException("Neo in forge is only supported on 1.20.1");
+        }
         var forgePath = multiLoaderForge.isNeo.get() ? "net.neoforged" : "net.minecraftforge";
         if(multiLoaderRoot.overrideSpongeMixin.get()){
             project.getConfigurations().getByName("annotationProcessor")
