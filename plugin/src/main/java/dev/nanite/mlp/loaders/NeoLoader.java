@@ -6,6 +6,7 @@ import dev.nanite.mlp.ext.MultiLoaderNeo;
 import dev.nanite.mlp.ext.MultiLoaderRoot;
 import net.neoforged.gradle.dsl.common.extensions.Minecraft;
 import net.neoforged.gradle.dsl.common.runs.run.Run;
+import net.neoforged.gradle.userdev.UserDevPlugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.internal.FactoryNamedDomainObjectContainer;
@@ -25,7 +26,7 @@ public class NeoLoader {
     }
 
     public static void applyNeoPlugins(Project project){
-        project.getPlugins().apply("net.neoforged.gradle.userdev");
+        project.getPlugins().apply(UserDevPlugin.class);
     }
 
     public static void configureForgeDependencies(Project project, MultiLoaderNeo neoLoader) {
