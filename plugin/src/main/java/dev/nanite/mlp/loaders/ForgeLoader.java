@@ -33,7 +33,6 @@ public class ForgeLoader {
         project.getPluginManager().apply("java");
         project.getPluginManager().apply(UserDevPlugin.class);
         project.getPluginManager().apply(MixinGradlePlugin.class);
-//        project.getPlugins().apply("net.minecraftforge.gradle");
     }
 
     public static void configureForgeDependencies(Project project, MultiLoaderForge multiLoaderForge){
