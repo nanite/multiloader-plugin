@@ -7,6 +7,7 @@ import dev.nanite.mlp.ext.MultiLoaderRoot;
 import net.minecraftforge.gradle.common.util.ModConfig;
 import net.minecraftforge.gradle.common.util.RunConfig;
 import net.minecraftforge.gradle.userdev.UserDevExtension;
+import net.minecraftforge.gradle.userdev.UserDevPlugin;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
@@ -14,6 +15,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.spongepowered.asm.gradle.plugins.MixinExtension;
+import org.spongepowered.asm.gradle.plugins.MixinGradlePlugin;
 
 import java.util.Map;
 
@@ -27,14 +29,17 @@ public class ForgeLoader {
         project.getTasks().getByName("jar").finalizedBy("reobfJar");
     }
 
-    public static void applyForgePlugins(Project project){
-        project.getPlugins().apply("java");
-        project.getPlugins().apply("net.minecraftforge.gradle");
-        project.getPlugins().apply("org.spongepowered.mixin");
+    public static void applyForgePlugins(Project project) {
+        project.getPluginManager().apply("java");
+        project.getPluginManager().apply(UserDevPlugin.class);
+        project.getPluginManager().apply(MixinGradlePlugin.class);
     }
 
     public static void configureForgeDependencies(Project project, MultiLoaderForge multiLoaderForge){
         MultiLoaderRoot multiLoaderRoot = MultiLoaderExtension.getRootExtension(project).getRootOptions().get();
+        if(multiLoaderForge.isNeo.get() && !multiLoaderRoot.minecraftVersion.get().equals("1.20.1")) {
+            throw new IllegalStateException("Neo in forge is only supported on 1.20.1");
+        }
         var forgePath = multiLoaderForge.isNeo.get() ? "net.neoforged" : "net.minecraftforge";
         if(multiLoaderRoot.overrideSpongeMixin.get()){
             project.getConfigurations().getByName("annotationProcessor")
@@ -89,7 +94,7 @@ public class ForgeLoader {
     }
 
     private static RunConfig createOrConfigureRunConfig(Project project, NamedDomainObjectContainer<RunConfig> runs,
-                                                   SourceSetContainer commonSourceSets, Project commonProject, String name, boolean isSplitSources){
+                                                        SourceSetContainer commonSourceSets, Project commonProject, String name, boolean isSplitSources){
         RunConfig runConfig = runs.maybeCreate(name.toLowerCase());
         runConfig.workingDirectory(project.file("run"));
         runConfig.ideaModule(project.getRootProject().getName() + "." + project.getName() + ".main");

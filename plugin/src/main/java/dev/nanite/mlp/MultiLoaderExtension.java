@@ -1,13 +1,11 @@
 package dev.nanite.mlp;
 
 import dev.nanite.mlp.aw2at.AccessWidenerToTransformerTask;
-import dev.nanite.mlp.ext.DataGenOptions;
-import dev.nanite.mlp.ext.MultiLoaderFabric;
-import dev.nanite.mlp.ext.MultiLoaderForge;
+import dev.nanite.mlp.ext.*;
 import dev.nanite.mlp.loaders.FabricLoader;
 import dev.nanite.mlp.loaders.ForgeLoader;
+import dev.nanite.mlp.loaders.NeoLoader;
 import dev.nanite.mlp.tasks.SingleOutputJar;
-import dev.nanite.mlp.ext.MultiLoaderRoot;
 import net.fabricmc.loom.api.LoomGradleExtensionAPI;
 import net.fabricmc.loom.api.ModSettings;
 import org.gradle.api.Action;
@@ -19,9 +17,12 @@ import org.gradle.api.flow.FlowScope;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.SourceSetContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import javax.inject.Inject;
 
 public abstract class MultiLoaderExtension {
@@ -58,7 +59,7 @@ public abstract class MultiLoaderExtension {
         }
         getRootOptions().set(rootOptions);
         getRootOptions().finalizeValue();
-         project.getTasks().register("aw2at", AccessWidenerToTransformerTask.class);
+        project.getTasks().register("aw2at", AccessWidenerToTransformerTask.class);
 
         if(rootOptions.singleOutputJar.get()) {
             SingleOutputJar singleOutputjar = project.getTasks().create("singleOutputJar", SingleOutputJar.class);
@@ -120,6 +121,21 @@ public abstract class MultiLoaderExtension {
                 }
             });
         }
+    }
 
+    public void neo(Action<MultiLoaderNeo> action) {
+        MultiLoaderNeo multiLoaderNeo = project.getObjects().newInstance(MultiLoaderNeo.class, project);
+        MultiLoaderRoot rootExtension = getRootExtension(project).getRootOptions().get();
+        if(rootExtension.isForgeATEnabled()) {
+            try {
+                Path baseAW = rootExtension.accessWidenerFile.get().toPath();
+                Path forgeAW = project.file(AccessWidenerToTransformerTask.ACCESS_TRANSFORMER_PATH).toPath();
+                AccessWidenerToTransformerTask.runConverter(baseAW, forgeAW);
+            }catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        action.execute(multiLoaderNeo);
+        NeoLoader.setupNeo(project, multiLoaderNeo);
     }
 }

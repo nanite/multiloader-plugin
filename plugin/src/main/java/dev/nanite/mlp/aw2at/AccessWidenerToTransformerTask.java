@@ -5,7 +5,10 @@ import dev.nanite.mlp.ext.MultiLoaderRoot;
 import dev.nanite.mlp.lib.DownloaderUtils;
 import dev.nanite.mlp.lib.minecraft.PistonMeta;
 import dev.nanite.mlp.lib.minecraft.VersionMeta;
+import dev.nanite.mlp.test.ATWriter;
 import dev.nanite.mlp.test.AccessRemappper;
+import dev.nanite.mlp.test.NeoCustomAccessWidenerRemapper;
+import net.fabricmc.accesswidener.AccessWidenerReader;
 import net.fabricmc.loom.LoomGradleExtension;
 import net.fabricmc.loom.api.mappings.layered.MappingsNamespace;
 import net.fabricmc.loom.util.ZipUtils;
@@ -29,12 +32,23 @@ public class AccessWidenerToTransformerTask extends DefaultTask {
 
     public static final String ACCESS_TRANSFORMER_PATH = "src/main/resources/META-INF/accesstransformer.cfg";
 
-    private static final String MCP_CONFIG = "https://maven.neoforged.net/releases/de/oceanlabs/mcp/mcp_config/%s/mcp_config-%s.zip";
+    private static final String MCP_CONFIG = "https://maven.minecraftforge.net/releases/de/oceanlabs/mcp/mcp_config/%s/mcp_config-%s.zip";
     private static final String PISTON_META = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
 
     @TaskAction
     public void run() throws IOException, URISyntaxException {
         runTransformer(getProject());
+    }
+
+    public static void runConverter(Path accessWidener, Path output) throws IOException {
+        ATWriter writer = new ATWriter();
+        NeoCustomAccessWidenerRemapper awRemapper = new NeoCustomAccessWidenerRemapper(writer);
+        AccessWidenerReader reader = new AccessWidenerReader(awRemapper);
+        reader.read(Files.readAllBytes(accessWidener));
+        if(!Files.exists(output.getParent())) {
+            Files.createDirectories(output);
+        }
+        Files.write(output, writer.write());
     }
 
     public static void runTransformer(Project rootProject) throws IOException, URISyntaxException {
