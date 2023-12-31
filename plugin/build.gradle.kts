@@ -40,7 +40,7 @@ dependencies {
         exclude(group = "net.minecraftforge", module = "DiffPatch")
     }
     implementation("org.spongepowered:mixingradle:0.7.+")
-    implementation("net.neoforged.gradle:userdev:7.0.72")
+    implementation("net.neoforged.gradle:userdev:7.0.74")
     // Use JUnit test framework for unit tests
     testImplementation("junit:junit:4.13.1")
 }
