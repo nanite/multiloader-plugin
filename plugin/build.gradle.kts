@@ -15,7 +15,7 @@ plugins {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
-version = "0.1.1"
+version = "0.1.2"
 group = "dev.nanite"
 
 repositories {
@@ -30,19 +30,23 @@ repositories {
 
 dependencies {
     compileOnly ("com.google.code.gson:gson:2.10.1")
-    compileOnly ("net.fabricmc:tiny-remapper:0.8.7")
+    compileOnly ("net.fabricmc:tiny-remapper:0.10.0")
     compileOnly ("net.fabricmc:access-widener:2.1.0")
-    compileOnly ("net.fabricmc:mapping-io:0.2.1")
+    compileOnly ("net.fabricmc:mapping-io:0.5.1")
 
-    implementation("net.fabricmc:fabric-loom:1.4-SNAPSHOT")
+    implementation("net.fabricmc:fabric-loom:1.5-SNAPSHOT")
 
     implementation("net.minecraftforge.gradle:ForgeGradle:6.0.+") {
         exclude(group = "net.minecraftforge", module = "DiffPatch")
     }
     implementation("org.spongepowered:mixingradle:0.7.+")
-    implementation("net.neoforged.gradle:userdev:7.0.74")
+    implementation("net.neoforged.gradle:userdev:7.0.96")
     // Use JUnit test framework for unit tests
     testImplementation("junit:junit:4.13.1")
+    testImplementation ("com.google.code.gson:gson:2.10.1")
+    testImplementation ("net.fabricmc:tiny-remapper:0.10.0")
+    testImplementation ("net.fabricmc:access-widener:2.1.0")
+    testImplementation ("net.fabricmc:mapping-io:0.5.1")
 }
 
 // Add a source set for the functional test suite

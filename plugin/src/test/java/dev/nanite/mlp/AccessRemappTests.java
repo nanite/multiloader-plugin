@@ -6,8 +6,8 @@ package dev.nanite.mlp;
 import dev.nanite.mlp.aw2at.AccessWidenerToTransformerTask;
 import dev.nanite.mlp.test.AccessRemappper;
 import net.fabricmc.accesswidener.AccessWidenerFormatException;
-import net.fabricmc.mappingio.format.ProGuardReader;
-import net.fabricmc.mappingio.format.TsrgReader;
+import net.fabricmc.mappingio.format.proguard.ProGuardFileReader;
+import net.fabricmc.mappingio.format.srg.TsrgFileReader;
 import net.fabricmc.mappingio.tree.MemoryMappingTree;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -36,8 +36,8 @@ public class AccessRemappTests {
         byte[] srgMappings = AccessWidenerToTransformerTask.getSrgMappings(cacheDir, "1.20.1");
 
         MemoryMappingTree tree = new MemoryMappingTree();
-        ProGuardReader.read(new InputStreamReader(new ByteArrayInputStream(mojangMappings)), "named", "obf", tree);
-        TsrgReader.read(new InputStreamReader(new ByteArrayInputStream(srgMappings)), tree);
+        ProGuardFileReader.read(new InputStreamReader(new ByteArrayInputStream(mojangMappings)), "named", "obf", tree);
+        TsrgFileReader.read(new InputStreamReader(new ByteArrayInputStream(srgMappings)), tree);
 
         remappper = new AccessRemappper(List.of(Path.of("test_data", "minecraft-mapped.jar")), tree, "named", "srg");
     }

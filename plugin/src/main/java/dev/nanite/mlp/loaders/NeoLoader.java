@@ -13,15 +13,18 @@ import org.gradle.api.internal.FactoryNamedDomainObjectContainer;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
 public class NeoLoader {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(NeoLoader.class);
     public static void setupNeo(Project project, MultiLoaderNeo multiLoaderForge){
         applyNeoPlugins(project);
-        configureForgeDependencies(project, multiLoaderForge);
-        setupForgeGradle(project, multiLoaderForge);
+        configureNeoDependencies(project, multiLoaderForge);
+        setupNeoGradle(project, multiLoaderForge);
         GenericLoader.genericGradleSetup(project);
     }
 
@@ -29,20 +32,20 @@ public class NeoLoader {
         project.getPlugins().apply(UserDevPlugin.class);
     }
 
-    public static void configureForgeDependencies(Project project, MultiLoaderNeo neoLoader) {
+    public static void configureNeoDependencies(Project project, MultiLoaderNeo neoLoader) {
         MultiLoaderRoot multiLoaderRoot = MultiLoaderExtension.getRootExtension(project).getRootOptions().get();
         DependencyHandler deps = project.getDependencies();
         deps.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, "net.neoforged:neoforge:" + neoLoader.neoVersion.get());
         Project commonProject = MultiLoaderExtension.getCommonProject(project, multiLoaderRoot);
-        deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, commonProject);
+        deps.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, commonProject);
         if(multiLoaderRoot.splitSources.get()) {
             SourceSetContainer commonSourceSets = commonProject.getExtensions().getByType(SourceSetContainer.class);
             SourceSet clientSourceSet = commonSourceSets.getByName("client");
-            deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, clientSourceSet.getOutput());
+            deps.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, clientSourceSet.getOutput());
         }
     }
 
-    public static void setupForgeGradle(Project project, MultiLoaderNeo multiLoaderForge) {
+    public static void setupNeoGradle(Project project, MultiLoaderNeo multiLoaderForge) {
         MultiLoaderRoot multiLoaderRoot = MultiLoaderExtension.getRootExtension(project).getRootOptions().get();
         Minecraft minecraft = project.getExtensions().getByType(Minecraft.class);
         Project commonProject = MultiLoaderExtension.getCommonProject(project, multiLoaderRoot);
@@ -54,16 +57,17 @@ public class NeoLoader {
         }
         createRun(runsExtension, "client", run -> {
 
+
         });
         createRun(runsExtension, "server", run -> {
             run.programArgument("--nogui");
         });
-        if (multiLoaderRoot.getDataGenOptions().isPresent() && (multiLoaderRoot.getDataGenOptions().get().useForge.isPresent() || multiLoaderRoot.getDataGenOptions().get().mixBoth.get())) {
+        if (multiLoaderRoot.getDataGenOptions().isPresent() && (multiLoaderRoot.getDataGenOptions().get().useNeo.isPresent() || multiLoaderRoot.getDataGenOptions().get().mixBoth.get())) {
             createRun(runsExtension, "data", run -> {
                 run.getProgramArguments().addAll(
                         "--mod", multiLoaderRoot.modID.get(),
                         "--all",
-                        "--output", multiLoaderRoot.getDataGenOptions().get().useForge.get().getName(),
+                        "--output", multiLoaderRoot.getDataGenOptions().get().useNeo.get().getName(),
                         "--existing", commonProject.file("src/main/resources").getName(),
                         "--existing", project.file("src/main/resources").getName());
             });

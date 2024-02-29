@@ -13,8 +13,8 @@ import net.fabricmc.loom.LoomGradleExtension;
 import net.fabricmc.loom.api.mappings.layered.MappingsNamespace;
 import net.fabricmc.loom.util.ZipUtils;
 import net.fabricmc.loom.util.download.Download;
-import net.fabricmc.mappingio.format.ProGuardReader;
-import net.fabricmc.mappingio.format.TsrgReader;
+import net.fabricmc.mappingio.format.proguard.ProGuardFileReader;
+import net.fabricmc.mappingio.format.srg.TsrgFileReader;
 import net.fabricmc.mappingio.tree.MemoryMappingTree;
 import net.minecraftforge.gradle.common.util.Utils;
 import org.gradle.api.DefaultTask;
@@ -62,12 +62,11 @@ public class AccessWidenerToTransformerTask extends DefaultTask {
         MemoryMappingTree tree = new MemoryMappingTree();
         Path cacheDir = DownloaderUtils.getCacheDir(rootProject);
         InputStream mojangMappings = new ByteArrayInputStream(getMojangMappings(cacheDir, root.minecraftVersion.get()));
-        ProGuardReader.read(new InputStreamReader(mojangMappings), "named", "obf", tree);
+        ProGuardFileReader.read(new InputStreamReader(mojangMappings), "named", "obf", tree);
 
         InputStream inputStream = new ByteArrayInputStream(getSrgMappings(cacheDir, root.minecraftVersion.get()));
 
-
-        TsrgReader.read(new InputStreamReader(inputStream), tree);
+        TsrgFileReader.read(new InputStreamReader(inputStream), tree);
         AccessRemappper remappper = new AccessRemappper(extension.getMinecraftJars(MappingsNamespace.NAMED), tree, "named", "srg");
         File file = root.accessWidenerFile.get();
         byte[] remap = remappper.remap(Files.readAllBytes(file.toPath()));

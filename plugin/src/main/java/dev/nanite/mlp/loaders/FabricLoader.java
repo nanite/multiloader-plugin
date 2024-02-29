@@ -20,7 +20,7 @@ public class FabricLoader {
     public static void setupFabric(Project project, MultiLoaderFabric multiLoaderFabric){
         applyFabricPlugins(project);
         configureFabricDependencies(project, multiLoaderFabric);
-        setupLoom(project);
+        setupLoom(project, multiLoaderFabric);
         GenericLoader.genericGradleSetup(project);
     }
 
@@ -49,7 +49,7 @@ public class FabricLoader {
         }
     }
 
-    public static void setupLoom(Project project){
+    public static void setupLoom(Project project, MultiLoaderFabric multiLoaderFabric){
         MultiLoaderRoot multiLoaderRoot = MultiLoaderExtension.getRootExtension(project).getRootOptions().get();
         Project commonProject = project.getRootProject().project(multiLoaderRoot.commonProjectName.get());
         LoomGradleExtensionAPI loomGradle = project.getExtensions().getByType(LoomGradleExtensionAPI.class);
@@ -82,8 +82,12 @@ public class FabricLoader {
         if (multiLoaderRoot.accessWidenerFile.isPresent()) {
             loomGradle.getAccessWidenerPath().set(multiLoaderRoot.accessWidenerFile.get());
         }
-        String defaultRefMapName = String.format("%s.refmap.json", multiLoaderRoot.modID.get());
-        loomGradle.getMixin().getDefaultRefmapName().set(defaultRefMapName);
+        if(multiLoaderFabric.fabricUseLegacyMixinAp.get()) {
+            String defaultRefMapName = String.format("%s.refmap.json", multiLoaderRoot.modID.get());
+            loomGradle.getMixin().getDefaultRefmapName().set(defaultRefMapName);
+        }else {
+            loomGradle.getMixin().getUseLegacyMixinAp().set(false);
+        }
         if(multiLoaderRoot.splitSources.get()){
             SourceSetContainer sourceSets = project.getExtensions().getByType(SourceSetContainer.class);
             SourceSetContainer commonSourceSets = commonProject.getExtensions().getByType(SourceSetContainer.class);
