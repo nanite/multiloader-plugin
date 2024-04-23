@@ -13,9 +13,9 @@ plugins {
     id("com.gradle.plugin-publish") version "1.2.0"
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-version = "0.1.2"
+version = "0.1.3"
 group = "dev.nanite"
 
 repositories {
@@ -25,6 +25,10 @@ repositories {
     maven {
         name = "Creeperhost"
         url = uri("https://maven.creeperhost.net/")
+    }
+    maven {
+        name = "Neo"
+        url = uri("https://maven.neoforged.net/releases")
     }
 }
 
@@ -39,12 +43,12 @@ dependencies {
     implementation("net.minecraftforge.gradle:ForgeGradle:6.0.+") {
         exclude(group = "net.minecraftforge", module = "DiffPatch")
     }
-    implementation("org.spongepowered:mixingradle:0.7.+")
-    implementation("net.neoforged.gradle:userdev:7.0.96")
+    implementation("org.spongepowered:mixingradle:0.7.38")
+    implementation("net.neoforged.gradle:userdev:7.0.100")
     // Use JUnit test framework for unit tests
     testImplementation("junit:junit:4.13.1")
     testImplementation ("com.google.code.gson:gson:2.10.1")
-    testImplementation ("net.fabricmc:tiny-remapper:0.10.0")
+    testImplementation ("net.fabricmc:tiny-remapper:0.10.1")
     testImplementation ("net.fabricmc:access-widener:2.1.0")
     testImplementation ("net.fabricmc:mapping-io:0.5.1")
 }
