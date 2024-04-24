@@ -1,5 +1,7 @@
 package dev.nanite.mlp.aw2at;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import dev.nanite.mlp.MultiLoaderExtension;
 import dev.nanite.mlp.ext.MultiLoaderRoot;
 import dev.nanite.mlp.lib.DownloaderUtils;
@@ -16,7 +18,6 @@ import net.fabricmc.loom.util.download.Download;
 import net.fabricmc.mappingio.format.proguard.ProGuardFileReader;
 import net.fabricmc.mappingio.format.srg.TsrgFileReader;
 import net.fabricmc.mappingio.tree.MemoryMappingTree;
-import net.minecraftforge.gradle.common.util.Utils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskAction;
@@ -29,6 +30,8 @@ import java.nio.file.StandardOpenOption;
 
 //This should only run from the root project
 public class AccessWidenerToTransformerTask extends DefaultTask {
+
+    private static final Gson GSON = new GsonBuilder().create();
 
     public static final String ACCESS_TRANSFORMER_PATH = "src/main/resources/META-INF/accesstransformer.cfg";
 
@@ -78,11 +81,11 @@ public class AccessWidenerToTransformerTask extends DefaultTask {
         error:
         if(!Files.exists(mojangMappings)) {
             String pistonMetaData = Download.create(PISTON_META).downloadString();
-            PistonMeta pistonMeta = Utils.GSON.fromJson(pistonMetaData, PistonMeta.class);
+            PistonMeta pistonMeta = GSON.fromJson(pistonMetaData, PistonMeta.class);
             for (PistonMeta.Version version : pistonMeta.versions) {
                 if(version.id.equals(minecraftVersion)) {
                     String versionMetaString = Download.create(version.url).downloadString();
-                    VersionMeta versionMeta = Utils.GSON.fromJson(versionMetaString, VersionMeta.class);
+                    VersionMeta versionMeta = GSON.fromJson(versionMetaString, VersionMeta.class);
                     VersionMeta.Downloads downloads = versionMeta.downloads;
                     Download.create(downloads.client_mappings.url)
                             .sha1(downloads.client_mappings.sha1)

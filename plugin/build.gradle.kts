@@ -15,7 +15,7 @@ plugins {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-version = "0.1.4"
+version = "0.1.5"
 group = "dev.nanite"
 
 repositories {
@@ -40,10 +40,10 @@ dependencies {
 
     implementation("net.fabricmc:fabric-loom:1.6.5")
 
-    implementation("net.minecraftforge.gradle:ForgeGradle:6.0.+") {
-        exclude(group = "net.minecraftforge", module = "DiffPatch")
-    }
-    implementation("org.spongepowered:mixingradle:0.7.38")
+//    implementation("net.minecraftforge.gradle:ForgeGradle:6.0.+") {
+//        exclude(group = "net.minecraftforge", module = "DiffPatch")
+//    }
+//    implementation("org.spongepowered:mixingradle:0.7.38")
     implementation("net.neoforged.gradle:userdev:7.0.100")
     // Use JUnit test framework for unit tests
     testImplementation("junit:junit:4.13.1")
