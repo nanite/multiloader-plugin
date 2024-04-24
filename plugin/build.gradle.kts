@@ -15,7 +15,7 @@ plugins {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-version = "0.1.3"
+version = "0.1.4"
 group = "dev.nanite"
 
 repositories {
@@ -38,7 +38,7 @@ dependencies {
     compileOnly ("net.fabricmc:access-widener:2.1.0")
     compileOnly ("net.fabricmc:mapping-io:0.5.1")
 
-    implementation("net.fabricmc:fabric-loom:1.5-SNAPSHOT")
+    implementation("net.fabricmc:fabric-loom:1.6.5")
 
     implementation("net.minecraftforge.gradle:ForgeGradle:6.0.+") {
         exclude(group = "net.minecraftforge", module = "DiffPatch")
