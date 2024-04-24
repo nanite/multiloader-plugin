@@ -40,7 +40,7 @@ public abstract class MultiLoaderRoot  {
         singleOutputJar = project.getObjects().property(Boolean.class).convention(false);
         filesToExpand = project.getObjects().listProperty(String.class)
                 .convention(Arrays.asList("pack.mcmeta", "fabric.mod.json",
-                        "META-INF/mods.toml", "mods.toml", "*.mixins.json"));
+                        "META-INF/mods.toml", "mods.toml", "*.mixins.json", "META-INF/neoforge.mods.json"));
         overrideSpongeMixin = project.getObjects().property(Boolean.class).convention(false);
         commonMixin = project.getObjects().property(String.class);
     }
