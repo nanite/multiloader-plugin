@@ -76,7 +76,7 @@ public class NeoLoader {
     }
 
     private static void createRun(FactoryNamedDomainObjectContainer<Run> runsExtension, String name, Consumer<Run> consumer) {
-        Run run = runsExtension.create(name);
+        Run run = runsExtension.maybeCreate(name);
         consumer.accept(run);
         runsExtension.add(run);
     }
