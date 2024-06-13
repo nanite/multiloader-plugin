@@ -3,7 +3,7 @@ package dev.nanite.mlp;
 import dev.nanite.mlp.aw2at.AccessWidenerToTransformerTask;
 import dev.nanite.mlp.ext.*;
 import dev.nanite.mlp.loaders.FabricLoader;
-import dev.nanite.mlp.loaders.ForgeLoader;
+//import dev.nanite.mlp.loaders.ForgeLoader;
 import dev.nanite.mlp.loaders.NeoLoader;
 import dev.nanite.mlp.tasks.SingleOutputJar;
 import net.fabricmc.loom.api.LoomGradleExtensionAPI;
@@ -111,7 +111,7 @@ public abstract class MultiLoaderExtension {
         MultiLoaderForge multiLoaderForge = project.getObjects().newInstance(MultiLoaderForge.class, project);
         MultiLoaderRoot rootExtension = getRootExtension(project).getRootOptions().get();
         action.execute(multiLoaderForge);
-        ForgeLoader.setupForge(project, multiLoaderForge);
+//        ForgeLoader.setupForge(project, multiLoaderForge);
         if(rootExtension.isForgeATEnabled()) {
             project.afterEvaluate(forgeProject -> {
                 try {

@@ -15,7 +15,7 @@ plugins {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-version = "0.1.8"
+version = "0.1.9"
 group = "dev.nanite"
 
 repositories {
@@ -34,17 +34,17 @@ repositories {
 
 dependencies {
     compileOnly ("com.google.code.gson:gson:2.10.1")
-    compileOnly ("net.fabricmc:tiny-remapper:0.10.0")
+    compileOnly ("net.fabricmc:tiny-remapper:0.10.3")
     compileOnly ("net.fabricmc:access-widener:2.1.0")
     compileOnly ("net.fabricmc:mapping-io:0.5.1")
 
-    implementation("net.fabricmc:fabric-loom:1.6.5")
+    implementation("net.fabricmc:fabric-loom:1.6.9")
 
-    implementation("net.minecraftforge.gradle:ForgeGradle:6.0.+") {
-        exclude(group = "net.minecraftforge", module = "DiffPatch")
-    }
-    implementation("org.spongepowered:mixingradle:0.7.38")
-    implementation("net.neoforged.gradle:userdev:7.0.107")
+//    implementation("net.minecraftforge.gradle:ForgeGradle:6.0.+") {
+//        exclude(group = "net.minecraftforge", module = "DiffPatch")
+//    }
+//    implementation("org.spongepowered:mixingradle:0.7.38")
+    implementation("net.neoforged.gradle:userdev:7.0.142")
     // Use JUnit test framework for unit tests
     testImplementation("junit:junit:4.13.1")
     testImplementation ("com.google.code.gson:gson:2.10.1")
