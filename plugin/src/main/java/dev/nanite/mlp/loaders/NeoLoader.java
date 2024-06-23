@@ -67,9 +67,9 @@ public class NeoLoader {
                 run.getProgramArguments().addAll(
                         "--mod", multiLoaderRoot.modID.get(),
                         "--all",
-                        "--output", multiLoaderRoot.getDataGenOptions().get().useNeo.get().getName(),
-                        "--existing", commonProject.file("src/main/resources").getName(),
-                        "--existing", project.file("src/main/resources").getName());
+                        "--output", multiLoaderRoot.getDataGenOptions().get().useNeo.get().getAbsolutePath(),
+                        "--existing", commonProject.file("src/main/resources").getAbsolutePath(),
+                        "--existing", project.file("src/main/resources").getAbsolutePath());
             });
         }
         runsExtension.configureEach(run -> run.modSource(project.getExtensions().getByType(SourceSetContainer.class).getByName("main")));

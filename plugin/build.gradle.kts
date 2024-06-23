@@ -15,7 +15,7 @@ plugins {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-version = "0.1.11"
+version = "0.1.12"
 group = "dev.nanite"
 
 repositories {
