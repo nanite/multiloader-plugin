@@ -6,7 +6,9 @@ import dev.nanite.mlp.ext.MultiLoaderFabric;
 import dev.nanite.mlp.ext.MultiLoaderRoot;
 import net.fabricmc.loom.api.LoomGradleExtensionAPI;
 import net.fabricmc.loom.api.ModSettings;
+import net.fabricmc.loom.api.mappings.layered.spec.LayeredMappingSpecBuilder;
 import net.fabricmc.loom.configuration.ide.RunConfigSettings;
+import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.plugins.JavaPlugin;
@@ -34,7 +36,9 @@ public class FabricLoader {
         DependencyHandler deps = project.getDependencies();
         LoomGradleExtensionAPI loomGradle = project.getExtensions().getByType(LoomGradleExtensionAPI.class);
         deps.add("minecraft", "com.mojang:minecraft:" + multiLoaderRoot.minecraftVersion.get());
-        deps.add("mappings", loomGradle.officialMojangMappings());
+        deps.add("mappings", loomGradle.layered(builder -> {
+            builder.officialMojangMappings();
+        }));
         deps.add("modImplementation", "net.fabricmc:fabric-loader:" + multiLoaderFabric.fabricLoaderVersion.get());
         if(multiLoaderFabric.fabricApiVersion.isPresent()) {
             deps.add("modImplementation", "net.fabricmc.fabric-api:fabric-api:" + multiLoaderFabric.fabricApiVersion.get());
@@ -57,16 +61,15 @@ public class FabricLoader {
         clientRunConfig.client();
         clientRunConfig.setConfigName("Fabric Client");
         clientRunConfig.ideConfigGenerated(true);
-        clientRunConfig.runDir("run");
+        clientRunConfig.runDir("runs/client");
 
         RunConfigSettings serverRunConfig = loomGradle.getRuns().maybeCreate("server");
         serverRunConfig.server();
         serverRunConfig.setConfigName("Fabric Server");
         serverRunConfig.ideConfigGenerated(true);
-        serverRunConfig.runDir("run");
+        serverRunConfig.runDir("runs/server");
 
-        if(multiLoaderRoot.getDataGenOptions().isPresent() &&
-                (multiLoaderRoot.getDataGenOptions().get().useFabric.isPresent() || multiLoaderRoot.getDataGenOptions().get().mixBoth.get())){
+        if(multiLoaderRoot.getDataGenOptions().isPresent() && (multiLoaderRoot.getDataGenOptions().get().useFabric.isPresent())){
             RunConfigSettings dataGenRunConfig = loomGradle.getRuns()
                     .maybeCreate("datagenClient");
             dataGenRunConfig.inherit(clientRunConfig);
@@ -76,7 +79,7 @@ public class FabricLoader {
             File commonProjectPath = commonProject.file("src/generated/resources");
             dataGenRunConfig.vmArg("-Dfabric-api.datagen.output-dir=" + dataGenOptions.useFabric.getOrElse(commonProjectPath).getAbsolutePath());
             dataGenRunConfig.vmArg("-Dfabric-api.datagen.modid=" + multiLoaderRoot.modID.get());
-            dataGenRunConfig.runDir("build/datagen");
+            dataGenRunConfig.runDir("runs/data");
         }
 
         if (multiLoaderRoot.accessWidenerFile.isPresent()) {

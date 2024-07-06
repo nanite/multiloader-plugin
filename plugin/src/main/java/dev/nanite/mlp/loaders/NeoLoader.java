@@ -1,15 +1,15 @@
 package dev.nanite.mlp.loaders;
 
 import dev.nanite.mlp.MultiLoaderExtension;
-import dev.nanite.mlp.aw2at.AccessWidenerToTransformerTask;
 import dev.nanite.mlp.ext.MultiLoaderNeo;
 import dev.nanite.mlp.ext.MultiLoaderRoot;
-import net.neoforged.gradle.dsl.common.extensions.Minecraft;
-import net.neoforged.gradle.dsl.common.runs.run.Run;
-import net.neoforged.gradle.userdev.UserDevPlugin;
+import net.neoforged.moddevgradle.dsl.ModModel;
+import net.neoforged.moddevgradle.dsl.NeoForgeExtension;
+import net.neoforged.moddevgradle.dsl.RunModel;
+import net.neoforged.moddevgradle.internal.ModDevPlugin;
+import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
-import org.gradle.api.internal.FactoryNamedDomainObjectContainer;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
@@ -20,6 +20,8 @@ import java.util.function.Consumer;
 
 public class NeoLoader {
 
+    public static final String ACCESS_TRANSFORMER_PATH = "src/main/resources/META-INF/accesstransformer.cfg";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(NeoLoader.class);
     public static void setupNeo(Project project, MultiLoaderNeo multiLoaderForge){
         applyNeoPlugins(project);
@@ -29,13 +31,12 @@ public class NeoLoader {
     }
 
     public static void applyNeoPlugins(Project project){
-        project.getPlugins().apply(UserDevPlugin.class);
+        project.getPlugins().apply(ModDevPlugin.class);
     }
 
     public static void configureNeoDependencies(Project project, MultiLoaderNeo neoLoader) {
         MultiLoaderRoot multiLoaderRoot = MultiLoaderExtension.getRootExtension(project).getRootOptions().get();
         DependencyHandler deps = project.getDependencies();
-        deps.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, "net.neoforged:neoforge:" + neoLoader.neoVersion.get());
         Project commonProject = MultiLoaderExtension.getCommonProject(project, multiLoaderRoot);
         deps.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, commonProject);
         if(multiLoaderRoot.splitSources.get()) {
@@ -47,36 +48,51 @@ public class NeoLoader {
 
     public static void setupNeoGradle(Project project, MultiLoaderNeo multiLoaderForge) {
         MultiLoaderRoot multiLoaderRoot = MultiLoaderExtension.getRootExtension(project).getRootOptions().get();
-        Minecraft minecraft = project.getExtensions().getByType(Minecraft.class);
+        NeoForgeExtension neoForgeExt = project.getExtensions().getByType(NeoForgeExtension.class);
         Project commonProject = MultiLoaderExtension.getCommonProject(project, multiLoaderRoot);
         //Todo there a better way to do this?
-        FactoryNamedDomainObjectContainer<Run> runsExtension = ((FactoryNamedDomainObjectContainer<Run>) project.getExtensions().getByName("runs"));
-
-        if (multiLoaderRoot.isForgeATEnabled()) {
-            minecraft.getAccessTransformers().file(AccessWidenerToTransformerTask.ACCESS_TRANSFORMER_PATH);
+        neoForgeExt.getVersion().set(multiLoaderForge.neoVersion.get());
+        if (multiLoaderRoot.isNeoATEnabled()) {
+            neoForgeExt.getAccessTransformers().add(ACCESS_TRANSFORMER_PATH);
         }
-        createRun(runsExtension, "client", run -> {
-
-
-        });
-        createRun(runsExtension, "server", run -> {
-            run.programArgument("--nogui");
-        });
-        if (multiLoaderRoot.getDataGenOptions().isPresent() && (multiLoaderRoot.getDataGenOptions().get().useNeo.isPresent() || multiLoaderRoot.getDataGenOptions().get().mixBoth.get())) {
-            createRun(runsExtension, "data", run -> {
-                run.getProgramArguments().addAll(
-                        "--mod", multiLoaderRoot.modID.get(),
-                        "--all",
-                        "--output", multiLoaderRoot.getDataGenOptions().get().useNeo.get().getAbsolutePath(),
-                        "--existing", commonProject.file("src/main/resources").getAbsolutePath(),
-                        "--existing", project.file("src/main/resources").getAbsolutePath());
+        neoForgeExt.runs(runModels -> {
+            createRun(runModels, "client", run -> {
+                run.client();
+                run.getIdeName().set("Neo Client");
+                run.getGameDirectory().set(project.file("run/client"));
             });
-        }
-        runsExtension.configureEach(run -> run.modSource(project.getExtensions().getByType(SourceSetContainer.class).getByName("main")));
+
+            createRun(runModels, "server", run -> {
+                run.server();
+                run.getIdeName().set("Neo Server");
+                run.programArgument("--nogui");
+                run.getGameDirectory().set(project.file("run/server"));
+            });
+
+            if(multiLoaderRoot.getDataGenOptions().isPresent() && multiLoaderRoot.getDataGenOptions().get().useNeo.isPresent()) {
+                createRun(runModels, "data", run -> {
+                    run.data();
+                    run.getIdeName().set("Neo DataGen");
+                    run.getProgramArguments().addAll(
+                            "--mod", multiLoaderRoot.modID.get(),
+                            "--all",
+                            "--output", multiLoaderRoot.getDataGenOptions().get().useNeo.get().getAbsolutePath(),
+                            "--existing", commonProject.file("src/main/resources").getAbsolutePath(),
+                            "--existing", project.file("src/main/resources").getAbsolutePath());
+                });
+            }
+        });
+
+        neoForgeExt.mods(modModels -> {
+            ModModel modModel = modModels.maybeCreate(multiLoaderRoot.modID.get());
+            modModel.sourceSet(project.getExtensions().getByType(SourceSetContainer.class).getByName("main"));
+        });
+
+
     }
 
-    private static void createRun(FactoryNamedDomainObjectContainer<Run> runsExtension, String name, Consumer<Run> consumer) {
-        Run run = runsExtension.maybeCreate(name);
+    private static void createRun(NamedDomainObjectContainer<RunModel> runsExtension, String name, Consumer<RunModel> consumer) {
+        RunModel run = runsExtension.maybeCreate(name);
         consumer.accept(run);
         runsExtension.add(run);
     }

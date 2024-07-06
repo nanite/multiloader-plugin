@@ -1,4 +1,4 @@
-package dev.nanite.mlp.test;
+package dev.nanite.mlp.aw2at;
 
 import net.fabricmc.accesswidener.AccessWidenerReader;
 import net.fabricmc.accesswidener.AccessWidenerVisitor;

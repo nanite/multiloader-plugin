@@ -6,6 +6,7 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.io.File;
 
@@ -24,6 +25,7 @@ public abstract class MultiLoaderRoot  {
     public Property<Boolean> overrideSpongeMixin;
     public Property<String> commonMixin;
 
+
     public abstract Property<DataGenOptions> getDataGenOptions();
     private final Project project;
     @Inject
@@ -39,14 +41,14 @@ public abstract class MultiLoaderRoot  {
         convertAccessWidener = project.getObjects().property(Boolean.class).convention(true);
         singleOutputJar = project.getObjects().property(Boolean.class).convention(false);
         filesToExpand = project.getObjects().listProperty(String.class)
-                .convention(Arrays.asList("pack.mcmeta", "fabric.mod.json",
-                        "META-INF/mods.toml", "mods.toml", "*.mixins.json", "META-INF/neoforge.mods.toml"));
+                .convention(new ArrayList<>(Arrays.asList("pack.mcmeta", "fabric.mod.json",
+                        "META-INF/mods.toml", "mods.toml", "*.mixins.json", "META-INF/neoforge.mods.toml")));
         overrideSpongeMixin = project.getObjects().property(Boolean.class).convention(false);
         commonMixin = project.getObjects().property(String.class);
     }
 
     //Todo better name?
-    public boolean isForgeATEnabled() {
+    public boolean isNeoATEnabled() {
         return accessWidenerFile.isPresent() && convertAccessWidener.get();
     }
     public void dataGen(Action<DataGenOptions> action) {
