@@ -24,6 +24,7 @@ public abstract class MultiLoaderRoot  {
     public Property<Boolean> convertAccessWidener;
     public Property<Boolean> overrideSpongeMixin;
     public Property<String> commonMixin;
+    public Property<String> group;
 
 
     public abstract Property<DataGenOptions> getDataGenOptions();
@@ -31,6 +32,7 @@ public abstract class MultiLoaderRoot  {
     @Inject
     public MultiLoaderRoot(Project project) {
         this.project = project;
+        group = project.getObjects().property(String.class);
         minecraftVersion = project.getObjects().property(String.class);
         parchmentVersion = project.getObjects().property(String.class);
         mixinString = project.getObjects().property(String.class).convention("org.spongepowered:mixin:0.8.5:processor");
