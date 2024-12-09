@@ -15,43 +15,47 @@ plugins {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-version = "0.3.0"
+version = "0.4.0"
 group = "dev.nanite"
 
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
     gradlePluginPortal()
-    maven {
-        name = "Creeperhost"
-        url = uri("https://maven.creeperhost.net/")
-    }
+//    maven {
+//        name = "Creeperhost"
+//        url = uri("https://maven.creeperhost.net/")
+//    }
     maven {
         name = "Neo"
         url = uri("https://maven.neoforged.net/releases")
+    }
+    maven {
+        name = "Fabric"
+        url = uri("https://maven.fabricmc.net/")
     }
 }
 
 dependencies {
     compileOnly ("com.google.code.gson:gson:2.10.1")
-    compileOnly ("net.fabricmc:tiny-remapper:0.10.3")
+    compileOnly ("net.fabricmc:tiny-remapper:0.10.4")
     compileOnly ("net.fabricmc:access-widener:2.1.0")
-    compileOnly ("net.fabricmc:mapping-io:0.5.1")
+    compileOnly ("net.fabricmc:mapping-io:0.6.1")
 
-    implementation("net.fabricmc:fabric-loom:1.7.1")
+    implementation("net.fabricmc:fabric-loom:1.9.2")
 
 //    implementation("net.minecraftforge.gradle:ForgeGradle:6.0.+") {
 //        exclude(group = "net.minecraftforge", module = "DiffPatch")
 //    }
 //    implementation("org.spongepowered:mixingradle:0.7.38")
 //    implementation("net.neoforged.gradle:userdev:7.0.151")
-    implementation("net.neoforged:moddev-gradle:0.1.126")
+    implementation("net.neoforged:moddev-gradle:2.0.58-beta")
     // Use JUnit test framework for unit tests
     testImplementation("junit:junit:4.13.1")
     testImplementation ("com.google.code.gson:gson:2.10.1")
-    testImplementation ("net.fabricmc:tiny-remapper:0.10.1")
+    testImplementation ("net.fabricmc:tiny-remapper:0.10.4")
     testImplementation ("net.fabricmc:access-widener:2.1.0")
-    testImplementation ("net.fabricmc:mapping-io:0.5.1")
+    testImplementation ("net.fabricmc:mapping-io:0.6.1")
 }
 
 // Add a source set for the functional test suite
