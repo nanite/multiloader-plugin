@@ -7,6 +7,7 @@ import dev.nanite.mlp.ext.MultiLoaderRoot;
 import net.fabricmc.loom.api.LoomGradleExtensionAPI;
 import net.fabricmc.loom.api.ModSettings;
 import net.fabricmc.loom.api.mappings.layered.spec.LayeredMappingSpecBuilder;
+import net.fabricmc.loom.configuration.FabricApiExtension;
 import net.fabricmc.loom.configuration.ide.RunConfigSettings;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
@@ -69,17 +70,24 @@ public class FabricLoader {
         serverRunConfig.ideConfigGenerated(true);
         serverRunConfig.runDir("runs/server");
 
-        if(multiLoaderRoot.getDataGenOptions().isPresent() && (multiLoaderRoot.getDataGenOptions().get().useFabric.isPresent())){
-            RunConfigSettings dataGenRunConfig = loomGradle.getRuns()
-                    .maybeCreate("datagenClient");
-            dataGenRunConfig.inherit(clientRunConfig);
-            dataGenRunConfig.setConfigName("Fabric Data Generation");
-            dataGenRunConfig.vmArg("-Dfabric-api.datagen");
-            DataGenOptions dataGenOptions = multiLoaderRoot.getDataGenOptions().get();
-            File commonProjectPath = commonProject.file("src/generated/resources");
-            dataGenRunConfig.vmArg("-Dfabric-api.datagen.output-dir=" + dataGenOptions.useFabric.getOrElse(commonProjectPath).getAbsolutePath());
-            dataGenRunConfig.vmArg("-Dfabric-api.datagen.modid=" + multiLoaderRoot.modID.get());
-            dataGenRunConfig.runDir("runs/data");
+        if(multiLoaderRoot.getDataGenOptions().isPresent() && (multiLoaderRoot.getDataGenOptions().get().useFabric.isPresent())) {
+            FabricApiExtension fabricApiExtension = project.getExtensions().getByType(FabricApiExtension.class);
+            fabricApiExtension.configureDataGeneration(dataGenerationSettings -> {
+                dataGenerationSettings.getClient().set(true);
+
+                File commonProjectPath = commonProject.file("src/generated/resources");
+                dataGenerationSettings.getOutputDirectory().set(multiLoaderRoot.getDataGenOptions().get().useFabric.getOrElse(commonProjectPath));
+            });
+//            RunConfigSettings dataGenRunConfig = loomGradle.getRuns()
+//                    .maybeCreate("datagenClient");
+//            dataGenRunConfig.inherit(clientRunConfig);
+//            dataGenRunConfig.setConfigName("Fabric Data Generation");
+//            dataGenRunConfig.vmArg("-Dfabric-api.datagen");
+//            DataGenOptions dataGenOptions = multiLoaderRoot.getDataGenOptions().get();
+//            File commonProjectPath = commonProject.file("src/generated/resources");
+//            dataGenRunConfig.vmArg("-Dfabric-api.datagen.output-dir=" + dataGenOptions.useFabric.getOrElse(commonProjectPath).getAbsolutePath());
+//            dataGenRunConfig.vmArg("-Dfabric-api.datagen.modid=" + multiLoaderRoot.modID.get());
+//            dataGenRunConfig.runDir("runs/data");
         }
 
         if (multiLoaderRoot.accessWidenerFile.isPresent()) {

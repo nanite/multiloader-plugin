@@ -113,9 +113,20 @@ public class NeoLoader {
             });
 
             if(multiLoaderRoot.getDataGenOptions().isPresent() && multiLoaderRoot.getDataGenOptions().get().useNeo.isPresent()) {
-                createRun(runModels, "data", run -> {
-                    run.data();
-                    run.getIdeName().set("Neo DataGen");
+                createRun(runModels, "clientData", run -> {
+                    run.clientData();
+                    run.getIdeName().set("Neo DataGen Client");
+                    run.getProgramArguments().addAll(
+                            "--mod", multiLoaderRoot.modID.get(),
+                            "--all",
+                            "--output", multiLoaderRoot.getDataGenOptions().get().useNeo.get().getAbsolutePath(),
+                            "--existing", commonProject.file("src/main/resources").getAbsolutePath(),
+                            "--existing", project.file("src/main/resources").getAbsolutePath());
+                });
+
+                createRun(runModels, "serverData", run -> {
+                    run.serverData();
+                    run.getIdeName().set("Neo DataGen Server");
                     run.getProgramArguments().addAll(
                             "--mod", multiLoaderRoot.modID.get(),
                             "--all",
