@@ -14,6 +14,7 @@ public abstract class MultiLoaderRoot  {
 
     public Property<String> minecraftVersion;
     public Property<String> parchmentVersion;
+    public Property<String> parchmentMinecraftVersion;
     public Property<String> mixinString;
     public Property<String> commonProjectName;
     public Property<String> modID;
@@ -35,6 +36,7 @@ public abstract class MultiLoaderRoot  {
         group = project.getObjects().property(String.class);
         minecraftVersion = project.getObjects().property(String.class);
         parchmentVersion = project.getObjects().property(String.class);
+        parchmentMinecraftVersion = project.getObjects().property(String.class);
         mixinString = project.getObjects().property(String.class).convention("org.spongepowered:mixin:0.8.5:processor");
         commonProjectName = project.getObjects().property(String.class).convention("common");
         modID = project.getObjects().property(String.class);
@@ -57,6 +59,10 @@ public abstract class MultiLoaderRoot  {
         DataGenOptions dataGenOptions = project.getObjects().newInstance(DataGenOptions.class, project);
         action.execute(dataGenOptions);
         getDataGenOptions().set(dataGenOptions);
+    }
+
+    public String getParchmentMcVersion() {
+        return parchmentMinecraftVersion.getOrElse(minecraftVersion.get());
     }
 
 }

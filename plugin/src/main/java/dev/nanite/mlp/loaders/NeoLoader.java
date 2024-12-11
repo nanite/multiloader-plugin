@@ -143,6 +143,13 @@ public class NeoLoader {
             modModels.add(modModel);
         });
 
+        if (multiLoaderRoot.parchmentVersion.isPresent()) {
+            neoForgeExt.parchment(parchment -> {
+                parchment.getMappingsVersion().set(multiLoaderRoot.parchmentVersion.get());
+                parchment.getMinecraftVersion().set(multiLoaderRoot.getParchmentMcVersion());
+            });
+        }
+
 
     }
 

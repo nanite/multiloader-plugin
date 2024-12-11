@@ -39,6 +39,9 @@ public class FabricLoader {
         deps.add("minecraft", "com.mojang:minecraft:" + multiLoaderRoot.minecraftVersion.get());
         deps.add("mappings", loomGradle.layered(builder -> {
             builder.officialMojangMappings();
+            if(multiLoaderRoot.parchmentVersion.isPresent()) {
+                builder.parchment("org.parchmentmc.data:parchment-" + multiLoaderRoot.getParchmentMcVersion() + ":" + multiLoaderRoot.parchmentVersion.get() + "@zip");
+            }
         }));
         deps.add("modImplementation", "net.fabricmc:fabric-loader:" + multiLoaderFabric.fabricLoaderVersion.get());
         if(multiLoaderFabric.fabricApiVersion.isPresent()) {
