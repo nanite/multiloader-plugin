@@ -6,6 +6,7 @@ import dev.nanite.mlp.ext.MultiLoaderRoot;
 import net.neoforged.moddevgradle.dsl.ModModel;
 import net.neoforged.moddevgradle.dsl.NeoForgeExtension;
 import net.neoforged.moddevgradle.dsl.RunModel;
+import net.neoforged.moddevgradle.internal.ModDevArtifactsWorkflow;
 import net.neoforged.moddevgradle.internal.ModDevPlugin;
 import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.Project;
@@ -97,7 +98,7 @@ public class NeoLoader {
         NeoForgeExtension neoForgeExt = project.getExtensions().getByType(NeoForgeExtension.class);
         Project commonProject = MultiLoaderExtension.getCommonProject(project, multiLoaderRoot);
         //Todo there a better way to do this?
-        neoForgeExt.getVersion().set(neoLoader.neoVersion.get());
+        neoForgeExt.setVersion(neoLoader.neoVersion.get());
         neoForgeExt.runs(runModels -> {
             createRun(runModels, "client", run -> {
                 run.client();
