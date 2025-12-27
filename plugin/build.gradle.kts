@@ -15,7 +15,7 @@ plugins {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-version = "0.5.0"
+version = "0.5.1"
 group = "dev.nanite"
 
 repositories {
@@ -42,14 +42,14 @@ dependencies {
     compileOnly ("net.fabricmc:access-widener:2.1.0")
     compileOnly ("net.fabricmc:mapping-io:0.7.1")
 
-    implementation("net.fabricmc:fabric-loom:1.10.5")
+    implementation("net.fabricmc:fabric-loom:1.14.10")
 
 //    implementation("net.minecraftforge.gradle:ForgeGradle:6.0.+") {
 //        exclude(group = "net.minecraftforge", module = "DiffPatch")
 //    }
 //    implementation("org.spongepowered:mixingradle:0.7.38")
 //    implementation("net.neoforged.gradle:userdev:7.0.151")
-    implementation("net.neoforged:moddev-gradle:2.0.95")
+    implementation("net.neoforged:moddev-gradle:2.0.134")
     // Use JUnit test framework for unit tests
     testImplementation("junit:junit:4.13.1")
     testImplementation ("com.google.code.gson:gson:2.10.1")
