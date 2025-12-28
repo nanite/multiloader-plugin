@@ -6,19 +6,17 @@ import dev.nanite.mlp.ext.MultiLoaderRoot;
 import net.neoforged.moddevgradle.dsl.ModModel;
 import net.neoforged.moddevgradle.dsl.NeoForgeExtension;
 import net.neoforged.moddevgradle.dsl.RunModel;
-import net.neoforged.moddevgradle.internal.ModDevArtifactsWorkflow;
 import net.neoforged.moddevgradle.internal.ModDevPlugin;
 import org.gradle.api.NamedDomainObjectContainer;
+import org.gradle.api.NamedDomainObjectProvider;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.ModuleDependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
-import org.gradle.api.plugins.JavaPlugin;
-import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.language.jvm.tasks.ProcessResources;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,12 +46,17 @@ public class NeoLoader {
         DependencyHandler deps = project.getDependencies();
         Project commonProject = MultiLoaderExtension.getCommonProject(project, multiLoaderRoot);
 
-        Configuration commonJava = project.getConfigurations().maybeCreate("commonJava");
-        commonJava.setCanBeResolved(true);
-        project.getConfigurations().add(commonJava);
-        Configuration commonResources = project.getConfigurations().maybeCreate("commonResources");
-        commonResources.setCanBeResolved(true);
-        project.getConfigurations().add(commonResources);
+//        Configuration commonJava = project.getConfigurations().maybeCreate("commonJava");
+//        commonJava.setCanBeResolved(true);
+        NamedDomainObjectProvider<@NotNull Configuration> commonJava = project.getConfigurations().register("commonJava", configuration -> {
+            configuration.setCanBeResolved(true);
+        });
+//        Configuration commonResources = project.getConfigurations().maybeCreate("commonResources");
+//        commonResources.setCanBeResolved(true);
+//        project.getConfigurations().add(commonResources);
+        NamedDomainObjectProvider<@NotNull Configuration> commonResources = project.getConfigurations().register("commonResources", configuration -> {
+            configuration.setCanBeResolved(true);
+        });
 
         project.getTasks().named("compileJava", JavaCompile.class).configure(task -> {
             task.dependsOn(commonJava);

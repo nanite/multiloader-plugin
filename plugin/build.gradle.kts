@@ -15,7 +15,7 @@ plugins {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-version = "0.5.1"
+version = "0.5.2"
 group = "dev.nanite"
 
 repositories {
@@ -38,9 +38,9 @@ repositories {
 
 dependencies {
     compileOnly ("com.google.code.gson:gson:2.10.1")
-    compileOnly ("net.fabricmc:tiny-remapper:0.11.1")
-    compileOnly ("net.fabricmc:access-widener:2.1.0")
-    compileOnly ("net.fabricmc:mapping-io:0.7.1")
+    compileOnly ("net.fabricmc:tiny-remapper:0.12.2")
+    implementation ("net.fabricmc:access-widener:2.1.0")
+    compileOnly ("net.fabricmc:mapping-io:0.8.0")
 
     implementation("net.fabricmc:fabric-loom:1.14.10")
 
