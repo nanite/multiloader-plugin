@@ -28,7 +28,7 @@ public class FabricLoader {
 
     public static void applyFabricPlugins(Project project){
         project.getPlugins().apply("java");
-        project.getPlugins().apply("fabric-loom");
+        project.getPlugins().apply("net.fabricmc.fabric-loom");
     }
 
     public static void configureFabricDependencies(Project project, MultiLoaderFabric multiLoaderFabric){
@@ -36,15 +36,15 @@ public class FabricLoader {
         DependencyHandler deps = project.getDependencies();
         LoomGradleExtensionAPI loomGradle = project.getExtensions().getByType(LoomGradleExtensionAPI.class);
         deps.add("minecraft", "com.mojang:minecraft:" + multiLoaderRoot.minecraftVersion.get());
-        deps.add("mappings", loomGradle.layered(builder -> {
-            builder.officialMojangMappings();
-            if(multiLoaderRoot.parchmentVersion.isPresent()) {
-                builder.parchment("org.parchmentmc.data:parchment-" + multiLoaderRoot.getParchmentMcVersion() + ":" + multiLoaderRoot.parchmentVersion.get() + "@zip");
-            }
-        }));
-        deps.add("modImplementation", "net.fabricmc:fabric-loader:" + multiLoaderFabric.fabricLoaderVersion.get());
+//        deps.add("mappings", loomGradle.layered(builder -> {
+//            builder.officialMojangMappings();
+//            if(multiLoaderRoot.parchmentVersion.isPresent()) {
+//                builder.parchment("org.parchmentmc.data:parchment-" + multiLoaderRoot.getParchmentMcVersion() + ":" + multiLoaderRoot.parchmentVersion.get() + "@zip");
+//            }
+//        }));
+        deps.add(JavaPlugin.API_CONFIGURATION_NAME, "net.fabricmc:fabric-loader:" + multiLoaderFabric.fabricLoaderVersion.get());
         if(multiLoaderFabric.fabricApiVersion.isPresent()) {
-            deps.add("modImplementation", "net.fabricmc.fabric-api:fabric-api:" + multiLoaderFabric.fabricApiVersion.get());
+            deps.add(JavaPlugin.API_CONFIGURATION_NAME, "net.fabricmc.fabric-api:fabric-api:" + multiLoaderFabric.fabricApiVersion.get());
         }
         Project commonProject = MultiLoaderExtension.getCommonProject(project, multiLoaderRoot);
         deps.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, commonProject);
@@ -52,7 +52,9 @@ public class FabricLoader {
             loomGradle.splitEnvironmentSourceSets();
             SourceSetContainer commonSourceSets = commonProject.getExtensions().getByType(SourceSetContainer.class);
             SourceSet clientSourceSet = commonSourceSets.getByName("client");
-            deps.add(clientSourceSet.getImplementationConfigurationName(), clientSourceSet.getOutput());
+            deps.add(project.getExtensions().getByType(SourceSetContainer.class).getByName("client").getImplementationConfigurationName(), clientSourceSet.getOutput());
+
+
         }
     }
 

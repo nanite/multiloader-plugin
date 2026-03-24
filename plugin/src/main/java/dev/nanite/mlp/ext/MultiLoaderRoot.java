@@ -37,7 +37,7 @@ public abstract class MultiLoaderRoot  {
         minecraftVersion = project.getObjects().property(String.class);
         parchmentVersion = project.getObjects().property(String.class);
         parchmentMinecraftVersion = project.getObjects().property(String.class);
-        mixinString = project.getObjects().property(String.class).convention("org.spongepowered:mixin:0.8.5:processor");
+        mixinString = project.getObjects().property(String.class).convention("net.fabricmc:sponge-mixin:0.17.0+mixin.0.8.7");
         commonProjectName = project.getObjects().property(String.class).convention("common");
         modID = project.getObjects().property(String.class);
         accessWidenerFile = project.getObjects().property(File.class);
@@ -55,6 +55,7 @@ public abstract class MultiLoaderRoot  {
     public boolean isNeoATEnabled() {
         return accessWidenerFile.isPresent() && convertAccessWidener.get();
     }
+
     public void dataGen(Action<DataGenOptions> action) {
         DataGenOptions dataGenOptions = project.getObjects().newInstance(DataGenOptions.class, project);
         action.execute(dataGenOptions);

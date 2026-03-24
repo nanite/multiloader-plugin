@@ -13,6 +13,7 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ModuleDependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.language.jvm.tasks.ProcessResources;
@@ -68,16 +69,12 @@ public class NeoLoader {
             task.from(commonResources);
         });
 
-        ModuleDependency commonDep = (ModuleDependency) deps.add("compileOnly", commonProject);
-        commonDep.capabilities(capabilities -> capabilities.requireCapability(multiLoaderRoot.group.get() + ":common"));
-
-        deps.add("commonJava", project.getDependencies().project(Map.of("path", ":common", "configuration", "commonJava")));
-        deps.add("commonResources", project.getDependencies().project(Map.of("path", ":common", "configuration", "commonResources")));
-
-
-        deps.add("commonJava", project.getDependencies().project(Map.of("path", ":common", "configuration", "commonClientJava")));
-        deps.add("commonResources", project.getDependencies().project(Map.of("path", ":common", "configuration", "commonClientResources")));
-
+        deps.add("api", commonProject);
+        if(multiLoaderRoot.splitSources.get()) {
+            SourceSetContainer commonSourceSets = commonProject.getExtensions().getByType(SourceSetContainer.class);
+            SourceSet clientSourceSet = commonSourceSets.getByName("client");
+            deps.add("api", clientSourceSet.getOutput());
+        }
 
         project.getTasks().withType(ProcessResources.class).forEach((task) -> {
             task.filesMatching(multiLoaderRoot.filesToExpand.get(),

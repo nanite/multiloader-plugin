@@ -69,13 +69,13 @@ public abstract class MultiLoaderExtension {
 
     public void common() {
         this.project.getPlugins().apply("java");
-        this.project.getPlugins().apply("fabric-loom");
+        this.project.getPlugins().apply("net.fabricmc.fabric-loom");
         MultiLoaderRoot multiLoaderRoot = getRootExtension(project).getRootOptions().get();
         LoomGradleExtensionAPI loom = this.project.getExtensions().getByType(LoomGradleExtensionAPI.class);
         DependencyHandler deps = this.project.getDependencies();
 
         deps.add("minecraft", "com.mojang:minecraft:" + multiLoaderRoot.minecraftVersion.get());
-        deps.add("mappings", loom.officialMojangMappings());
+//        deps.add("mappings", loom.officialMojangMappings());
         deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, multiLoaderRoot.mixinString.get());
 
         if (multiLoaderRoot.accessWidenerFile.isPresent()) {
@@ -86,20 +86,24 @@ public abstract class MultiLoaderExtension {
 
         if(multiLoaderRoot.splitSources.get()) {
             loom.splitEnvironmentSourceSets();
-            ModSettings modSettings = loom.getMods().maybeCreate(multiLoaderRoot.modID.get());
-            modSettings.sourceSet(sourceSets.getByName("main"));
-            modSettings.sourceSet(sourceSets.getByName("client"));
+//            ModSettings modSettings = loom.getMods().maybeCreate(multiLoaderRoot.modID.get());
+//            modSettings.sourceSet(sourceSets.getByName("main"));
+//            modSettings.sourceSet(sourceSets.getByName("client"));
+//
+//            Configuration commonClientJava = this.project.getConfigurations().maybeCreate("commonClientJava");
+//            commonClientJava.setCanBeResolved(false);
+//            commonClientJava.setCanBeConsumed(true);
+//            Configuration commonClientResources = this.project.getConfigurations().maybeCreate("commonClientResources");
+//            commonClientResources.setCanBeResolved(false);
+//            commonClientResources.setCanBeConsumed(true);
+//
+//            SourceSet client = sourceSets.getByName("client");
+//            this.project.getArtifacts().add("commonClientJava", client.getJava().getSourceDirectories().getSingleFile());
+//            this.project.getArtifacts().add("commonClientResources", client.getResources().getSourceDirectories().getSingleFile());
 
-            Configuration commonClientJava = this.project.getConfigurations().maybeCreate("commonClientJava");
-            commonClientJava.setCanBeResolved(false);
-            commonClientJava.setCanBeConsumed(true);
-            Configuration commonClientResources = this.project.getConfigurations().maybeCreate("commonClientResources");
-            commonClientResources.setCanBeResolved(false);
-            commonClientResources.setCanBeConsumed(true);
-
-            SourceSet client = sourceSets.getByName("client");
-            this.project.getArtifacts().add("commonClientJava", client.getJava().getSourceDirectories().getSingleFile());
-            this.project.getArtifacts().add("commonClientResources", client.getResources().getSourceDirectories().getSingleFile());
+//            SourceSetContainer commonSourceSets = this.project.getExtensions().getByType(SourceSetContainer.class);
+//            SourceSet clientSourceSet = commonSourceSets.getByName("client");
+//            deps.add(clientSourceSet.getImplementationConfigurationName(), clientSourceSet.getOutput());
         }
         multiLoaderRoot.commonProjectName.set(this.project.getName());
 
