@@ -13,6 +13,7 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ModuleDependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.compile.JavaCompile;
@@ -47,14 +48,9 @@ public class NeoLoader {
         DependencyHandler deps = project.getDependencies();
         Project commonProject = MultiLoaderExtension.getCommonProject(project, multiLoaderRoot);
 
-//        Configuration commonJava = project.getConfigurations().maybeCreate("commonJava");
-//        commonJava.setCanBeResolved(true);
         NamedDomainObjectProvider<@NotNull Configuration> commonJava = project.getConfigurations().register("commonJava", configuration -> {
             configuration.setCanBeResolved(true);
         });
-//        Configuration commonResources = project.getConfigurations().maybeCreate("commonResources");
-//        commonResources.setCanBeResolved(true);
-//        project.getConfigurations().add(commonResources);
         NamedDomainObjectProvider<@NotNull Configuration> commonResources = project.getConfigurations().register("commonResources", configuration -> {
             configuration.setCanBeResolved(true);
         });
@@ -83,9 +79,8 @@ public class NeoLoader {
                     });
         });
 
-//        }
 //        deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, commonProject);
-
+//
 //        if(multiLoaderRoot.splitSources.get()) {
 //            SourceSetContainer commonSourceSets = commonProject.getExtensions().getByType(SourceSetContainer.class);
 //            SourceSet clientSourceSet = commonSourceSets.getByName("client");
@@ -141,6 +136,10 @@ public class NeoLoader {
         neoForgeExt.mods(modModels -> {
             ModModel modModel = modModels.maybeCreate(multiLoaderRoot.modID.get());
             modModel.sourceSet(project.getExtensions().getByType(SourceSetContainer.class).getByName("main"));
+            modModel.sourceSet(commonProject.getExtensions().getByType(SourceSetContainer.class).getByName("main"));
+            if (multiLoaderRoot.splitSources.get()) {
+                modModel.sourceSet(commonProject.getExtensions().getByType(SourceSetContainer.class).getByName("client"));
+            }
             modModels.add(modModel);
         });
 
