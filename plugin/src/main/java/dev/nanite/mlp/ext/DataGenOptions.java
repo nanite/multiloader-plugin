@@ -11,7 +11,6 @@ public abstract class DataGenOptions {
     public Property<File> useNeo;
     public Property<File> useFabric;
 
-
     @Inject
     public DataGenOptions(Project project) {
         useFabric = project.getObjects().property(File.class);

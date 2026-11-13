@@ -15,6 +15,7 @@ public abstract class MultiLoaderRoot  {
     public Property<String> minecraftVersion;
     public Property<String> parchmentVersion;
     public Property<String> parchmentMinecraftVersion;
+    public Property<String> mixinExtraString;
     public Property<String> mixinString;
     public Property<String> commonProjectName;
     public Property<String> modID;
@@ -38,6 +39,7 @@ public abstract class MultiLoaderRoot  {
         parchmentVersion = project.getObjects().property(String.class);
         parchmentMinecraftVersion = project.getObjects().property(String.class);
         mixinString = project.getObjects().property(String.class).convention("net.fabricmc:sponge-mixin:0.17.0+mixin.0.8.7");
+        mixinExtraString = project.getObjects().property(String.class).convention("io.github.llamalad7:mixinextras-common:0.5.3");
         commonProjectName = project.getObjects().property(String.class).convention("common");
         modID = project.getObjects().property(String.class);
         accessWidenerFile = project.getObjects().property(File.class);

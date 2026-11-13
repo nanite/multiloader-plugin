@@ -36,12 +36,6 @@ public class FabricLoader {
         DependencyHandler deps = project.getDependencies();
         LoomGradleExtensionAPI loomGradle = project.getExtensions().getByType(LoomGradleExtensionAPI.class);
         deps.add("minecraft", "com.mojang:minecraft:" + multiLoaderRoot.minecraftVersion.get());
-//        deps.add("mappings", loomGradle.layered(builder -> {
-//            builder.officialMojangMappings();
-//            if(multiLoaderRoot.parchmentVersion.isPresent()) {
-//                builder.parchment("org.parchmentmc.data:parchment-" + multiLoaderRoot.getParchmentMcVersion() + ":" + multiLoaderRoot.parchmentVersion.get() + "@zip");
-//            }
-//        }));
         deps.add(JavaPlugin.API_CONFIGURATION_NAME, "net.fabricmc:fabric-loader:" + multiLoaderFabric.fabricLoaderVersion.get());
         if(multiLoaderFabric.fabricApiVersion.isPresent()) {
             deps.add(JavaPlugin.API_CONFIGURATION_NAME, "net.fabricmc.fabric-api:fabric-api:" + multiLoaderFabric.fabricApiVersion.get());

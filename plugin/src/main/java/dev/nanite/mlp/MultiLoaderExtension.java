@@ -75,8 +75,8 @@ public abstract class MultiLoaderExtension {
         DependencyHandler deps = this.project.getDependencies();
 
         deps.add("minecraft", "com.mojang:minecraft:" + multiLoaderRoot.minecraftVersion.get());
-//        deps.add("mappings", loom.officialMojangMappings());
         deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, multiLoaderRoot.mixinString.get());
+        deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, multiLoaderRoot.mixinExtraString.get());
 
         if (multiLoaderRoot.accessWidenerFile.isPresent()) {
             loom.getAccessWidenerPath().set(multiLoaderRoot.accessWidenerFile.get());
@@ -86,25 +86,10 @@ public abstract class MultiLoaderExtension {
 
         if(multiLoaderRoot.splitSources.get()) {
             loom.splitEnvironmentSourceSets();
-//            ModSettings modSettings = loom.getMods().maybeCreate(multiLoaderRoot.modID.get());
-//            modSettings.sourceSet(sourceSets.getByName("main"));
-//            modSettings.sourceSet(sourceSets.getByName("client"));
-//
-//            Configuration commonClientJava = this.project.getConfigurations().maybeCreate("commonClientJava");
-//            commonClientJava.setCanBeResolved(false);
-//            commonClientJava.setCanBeConsumed(true);
-//            Configuration commonClientResources = this.project.getConfigurations().maybeCreate("commonClientResources");
-//            commonClientResources.setCanBeResolved(false);
-//            commonClientResources.setCanBeConsumed(true);
-//
-//            SourceSet client = sourceSets.getByName("client");
-//            this.project.getArtifacts().add("commonClientJava", client.getJava().getSourceDirectories().getSingleFile());
-//            this.project.getArtifacts().add("commonClientResources", client.getResources().getSourceDirectories().getSingleFile());
-
-//            SourceSetContainer commonSourceSets = this.project.getExtensions().getByType(SourceSetContainer.class);
-//            SourceSet clientSourceSet = commonSourceSets.getByName("client");
-//            deps.add(clientSourceSet.getImplementationConfigurationName(), clientSourceSet.getOutput());
+            deps.add("clientCompileOnly", multiLoaderRoot.mixinString.get());
+            deps.add("clientCompileOnly", multiLoaderRoot.mixinExtraString.get());
         }
+
         multiLoaderRoot.commonProjectName.set(this.project.getName());
 
         Configuration commonJava = this.project.getConfigurations().maybeCreate("commonJava");

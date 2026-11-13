@@ -17,6 +17,7 @@ import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.gradle.api.tasks.bundling.Jar;
 import org.gradle.language.jvm.tasks.ProcessResources;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -35,8 +36,8 @@ public class NeoLoader {
         applyNeoPlugins(project);
         configureNeoDependencies(project, multiLoaderForge);
         setupNeoGradle(project, multiLoaderForge);
-
-//        GenericLoader.genericGradleSetup(project);
+        configureNeoConventions(project);
+        GenericLoader.configureMavenPublishWiring(project);
     }
 
     public static void applyNeoPlugins(Project project){
@@ -72,6 +73,11 @@ public class NeoLoader {
             deps.add("api", clientSourceSet.getOutput());
         }
 
+
+        ModuleDependency commonDep = (ModuleDependency) deps.add("compileOnly", commonProject);
+        commonDep.capabilities(capabilities -> capabilities.requireCapability(multiLoaderRoot.group.get() + ":common"));
+
+
         project.getTasks().withType(ProcessResources.class).forEach((task) -> {
             task.filesMatching(multiLoaderRoot.filesToExpand.get(),
                     (s) -> {
@@ -79,13 +85,6 @@ public class NeoLoader {
                     });
         });
 
-//        deps.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, commonProject);
-//
-//        if(multiLoaderRoot.splitSources.get()) {
-//            SourceSetContainer commonSourceSets = commonProject.getExtensions().getByType(SourceSetContainer.class);
-//            SourceSet clientSourceSet = commonSourceSets.getByName("client");
-//            deps.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, clientSourceSet.getOutput());
-//        }
     }
 
     public static void setupNeoGradle(Project project, MultiLoaderNeo neoLoader) {
@@ -149,8 +148,23 @@ public class NeoLoader {
                 parchment.getMinecraftVersion().set(multiLoaderRoot.getParchmentMcVersion());
             });
         }
+    }
 
+    private static void configureNeoConventions(Project project) {
+        MultiLoaderRoot multiLoaderRoot = MultiLoaderExtension.getRootExtension(project).getRootOptions().get();
+        Project commonProject = MultiLoaderExtension.getCommonProject(project, multiLoaderRoot);
+        SourceSetContainer commonSourceSets = commonProject.getExtensions().getByType(SourceSetContainer.class);
 
+        project.getExtensions().getByType(SourceSetContainer.class)
+                .named(SourceSet.MAIN_SOURCE_SET_NAME, main -> main.getResources().srcDir("src/generated/resources"));
+
+        project.getTasks().named(JavaPlugin.JAR_TASK_NAME, Jar.class).configure(jar -> {
+            jar.from(commonSourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput());
+            SourceSet commonClient = commonSourceSets.findByName("client");
+            if (multiLoaderRoot.splitSources.get() && commonClient != null) {
+                jar.from(commonClient.getOutput());
+            }
+        });
     }
 
     private static void createRun(NamedDomainObjectContainer<RunModel> runsExtension, String name, Consumer<RunModel> consumer) {

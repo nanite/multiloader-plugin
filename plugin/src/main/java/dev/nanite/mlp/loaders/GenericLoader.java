@@ -3,6 +3,9 @@ package dev.nanite.mlp.loaders;
 import dev.nanite.mlp.MultiLoaderExtension;
 import dev.nanite.mlp.ext.MultiLoaderRoot;
 import org.gradle.api.Project;
+import org.gradle.api.component.SoftwareComponent;
+import org.gradle.api.publish.PublishingExtension;
+import org.gradle.api.publish.maven.MavenPublication;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskContainer;
@@ -14,6 +17,7 @@ import java.io.File;
 
 public class GenericLoader {
     public static void genericGradleSetup(Project project){
+        configureMavenPublishWiring(project);
         //TODO: Do this better + split source sets!
         TaskContainer tasks = project.getTasks();
         MultiLoaderRoot multiLoaderRoot = MultiLoaderExtension.getRootExtension(project).getRootOptions().get();
@@ -55,6 +59,21 @@ public class GenericLoader {
         });
         project.getExtensions().getByType(SourceSetContainer.class).matching(t -> !t.getName().contains("test")).forEach(sourceSet -> {
             sourceSet.getAllSource().getSourceDirectories().filter((file) -> !file.exists()).forEach(File::mkdirs);
+        });
+    }
+
+    public static void configureMavenPublishWiring(Project project) {
+        project.getPlugins().withId("maven-publish", ignored -> {
+            PublishingExtension publishing = project.getExtensions().findByType(PublishingExtension.class);
+            SoftwareComponent javaComponent = project.getComponents().findByName("java");
+            if (publishing == null || javaComponent == null) {
+                return;
+            }
+
+            publishing.getPublications()
+                    .withType(MavenPublication.class)
+                    .matching(publication -> "mavenJava".equals(publication.getName()))
+                    .all(publication -> publication.from(javaComponent));
         });
     }
 }
